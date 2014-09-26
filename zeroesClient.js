@@ -6,6 +6,9 @@ client.connect(7777, function() {
 });
 
 client.on('data', function(data) {
+    if(data.toString().indexOf('winner') !== -1){
+        console.log(data.toString());
+    }
     var message = data.toString();
     var position = message.indexOf('[');
     if(position != -1) {
@@ -17,14 +20,8 @@ client.on('data', function(data) {
             data = [];
         data.push(combination);
         data.push(combinatons);
-
         var str = JSON.stringify(data);
-
         console.log(str);
         client.write(str);
-
-        function randomInt(min, max) {
-            return min + ((max-min+1)*Math.random()^0);
-        }
     }
 });
