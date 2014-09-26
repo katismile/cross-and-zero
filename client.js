@@ -10,7 +10,6 @@ client.on('data', function(data) {
     if(data.toString().indexOf('winner') !== -1 || data.toString().indexOf('lost')){
         console.log(data.toString());
     }
-
     var message = data.toString();
     var position = message.indexOf('[');
     if(position != -1) {
