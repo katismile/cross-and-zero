@@ -31,31 +31,34 @@ var server = net.createServer(function(socket) {
 
     }
     socket.on('data', function (data) {
-        if(combinations.length >= 0){
-            var currentData = JSON.parse(data.toString());
-            var position = currentData[0];
-            combinations = currentData[1];
-            if (position.length == 2) {
-                setPosition(current, field, position);
-                console.log('field');
-                console.log(field);
-                if(checkWinner(field)){
-                    for(var i = 0; i < sockets.length; i ++){
-                        console.log('The winner is ' + socketsName[current]);
-                        sockets[i].write('The winner is ' + socketsName[current]);
-                        sockets[i].destroy();
+        var dataToString = data.toString();
+        if(dataToString.indexOf('[') !== -1){
+            if(combinations.length >= 0){
+                var currentData = JSON.parse(data.toString());
+                var position = currentData[0];
+                combinations = currentData[1];
+                if (position.length == 2) {
+                    setPosition(current, field, position);
+                    console.log('field');
+                    console.log(field);
+                    if(checkWinner(field)){
+                        for(var i = 0; i < sockets.length; i++){
+                            console.log('The winner is ' + socketsName[current]);
+                            sockets[i].write('The winner is ' + socketsName[current]);
+                            sockets[i].destroy();
+                        }
                     }
-                }
-                else if(!checkWinner(field) && combinations.length == 0){
-                    for(var i = 0; i < sockets.length; i ++){
-                        console.log('The game is finished, you both lost');
-                        sockets[i].write('The game is finished, you both lost');
-                        sockets[i].destroy();
+                    else if(!checkWinner(field) && combinations.length == 0){
+                        for(var j = 0; j < sockets.length; j++){
+                            console.log('The game is finished, you both lost');
+                            sockets[j].write('The game is finished, you both lost');
+                            sockets[j].destroy();
+                        }
                     }
-                }
-                else{
-                    current = current ? 0 : 1;
-                    sockets[current].write('move, ' + JSON.stringify(combinations))
+                    else{
+                        current = current ? 0 : 1;
+                        sockets[current].write('move, ' + JSON.stringify(combinations))
+                    }
                 }
             }
         }

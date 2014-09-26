@@ -3,6 +3,7 @@ var net = require('net');
 var client = new net.Socket();
 
 client.connect(7777, function() {
+    client.write('Hello, server')
 });
 
 client.on('data', function(data) {
