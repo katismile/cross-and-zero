@@ -6,7 +6,7 @@ client.connect(7777, function() {
 });
 
 client.on('data', function(data) {
-    if(data.toString().indexOf('winner') !== -1){
+    if(data.toString().indexOf('winner') !== -1 || data.toString().indexOf('lost')){
         console.log(data.toString());
     }
 

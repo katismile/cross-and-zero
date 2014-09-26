@@ -22,7 +22,6 @@ var server = net.createServer(function(socket) {
     console.log('connect');
     if(sockets.length < 2){
         sockets.push(socket);
-        console.log(sockets.length);
     }
     else{
         socket.destroy();
@@ -32,7 +31,7 @@ var server = net.createServer(function(socket) {
 
     }
     socket.on('data', function (data) {
-        if(combinations.length > 0){
+        if(combinations.length >= 0){
             var currentData = JSON.parse(data.toString());
             var position = currentData[0];
             combinations = currentData[1];
@@ -44,6 +43,13 @@ var server = net.createServer(function(socket) {
                     for(var i = 0; i < sockets.length; i ++){
                         console.log('The winner is ' + socketsName[current]);
                         sockets[i].write('The winner is ' + socketsName[current]);
+                        sockets[i].destroy();
+                    }
+                }
+                else if(!checkWinner(field) && combinations.length == 0){
+                    for(var i = 0; i < sockets.length; i ++){
+                        console.log('The game is finished, you both lost');
+                        sockets[i].write('The game is finished, you both lost');
                         sockets[i].destroy();
                     }
                 }
@@ -65,7 +71,6 @@ function setPosition(current, field, comb) {
 }
 
 function checkWinner(field){
-    console.log('fields: ' + field[0][0], field[0][1]);
     if(field[0][0] !== undefined && field[1][0] !== undefined && field[2][0] !== undefined && field[0][0] == field[1][0] && field[1][0] == field[2][0]){
         return true;
     }
