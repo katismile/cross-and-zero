@@ -26,16 +26,27 @@ var server = net.createServer(function(socket) {
         sockets[0].write('move, ' + JSON.stringify(combinations))
 
     }
-    socket.on('data', function(data){
-        console.log('current position:' + data.toString());
-        var position = data.toString().split(',');
-        console.log('pos ' + position);
-        if (position.length == 2){
-            current = current ? 0 : 1;
-            console.log('0 or 1:' + current);
-            sockets[current].write('your move')
-        }
+    socket.on('data', function (data) {
+        //while(combinations) {
+            var incomming = data.toString();
+            var separetor = incomming.indexOf(']');
+            var pos = incomming.slice(0, separetor + 1);
+            var position = JSON.parse(pos);
+            var comb = incomming.slice(separetor + 1, incomming.length);
+            combinations = JSON.parse(comb);
+        console.log(combinations);
+            if (position.length == 2) {
+                current = current ? 0 : 1;
+                console.log('current:' + current);
+                console.log('pos:' + position);
+                console.log(combinations);
+                sockets[current].write('move, ' + JSON.stringify(combinations))
+            }
+        //}
     })
+
+
+
 
 }).listen(7777, function() {
     console.log('Server is running!');
