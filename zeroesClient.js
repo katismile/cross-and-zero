@@ -12,9 +12,14 @@ client.on('data', function(data) {
         var parseString = message.slice(position, message.length),
             combinatons = JSON.parse(parseString),
             length = combinatons.length,
-            value = randomInt(0, length),
+            value = Math.floor(Math.random()*length),
             combination = combinatons.splice(value, 1)[0],
-            str = JSON.stringify(combination) + " " + JSON.stringify(combinatons) ;
+            data = [];
+        data.push(combination);
+        data.push(combinatons);
+
+        var str = JSON.stringify(data);
+
         console.log(str);
         client.write(str);
 

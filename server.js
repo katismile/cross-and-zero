@@ -27,14 +27,12 @@ var server = net.createServer(function(socket) {
 
     }
     socket.on('data', function (data) {
-        //while(combinations) {
-            var incomming = data.toString();
-            var separetor = incomming.indexOf(']');
-            var pos = incomming.slice(0, separetor + 1);
-            var position = JSON.parse(pos);
-            var comb = incomming.slice(separetor + 1, incomming.length);
-            combinations = JSON.parse(comb);
-        console.log(combinations);
+        if(combinations.length > 0){
+            console.log('data' + data.toString());
+            var currentData = JSON.parse(data.toString());
+            var position = currentData[0];
+            combinations = currentData[1];
+            console.log(position.length, combinations);
             if (position.length == 2) {
                 current = current ? 0 : 1;
                 console.log('current:' + current);
@@ -42,7 +40,7 @@ var server = net.createServer(function(socket) {
                 console.log(combinations);
                 sockets[current].write('move, ' + JSON.stringify(combinations))
             }
-        //}
+        }
     })
 
 
