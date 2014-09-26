@@ -47,8 +47,10 @@ var server = net.createServer(function(socket) {
                         sockets[i].destroy();
                     }
                 }
-                current = current ? 0 : 1;
-                sockets[current].write('move, ' + JSON.stringify(combinations))
+                else{
+                    current = current ? 0 : 1;
+                    sockets[current].write('move, ' + JSON.stringify(combinations))
+                }
             }
         }
     })
