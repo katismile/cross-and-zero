@@ -7,7 +7,12 @@ module.exports = function move(client, message) {
             length = combinatons.length,
             value = randomInt(0, length),
             combination = combinatons.splice(value, 1)[0],
-            str = JSON.stringify(combination) + " " + JSON.stringify(combinatons) ;
+            data = [];
+        data.push(combination);
+        data.push(combinatons);
+
+        var str = JSON.stringify(data);
+
         console.log(str);
         client.write(str);
 
