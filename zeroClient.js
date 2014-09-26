@@ -4,7 +4,7 @@ var net = require('net'),
 var client = new net.Socket();
 
 client.connect(7777, function() {
-    client.write('Hello Server, I am Cross');
+    client.write('Hello Server!');
 });
 
 client.on('data', function(data) {
