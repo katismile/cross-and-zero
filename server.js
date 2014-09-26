@@ -20,20 +20,19 @@ var field = [[],[],[]];
 
 var server = net.createServer(function(socket) {
     console.log('connect');
-    if(sockets.length < 2) {
+    if(sockets.length < 2){
         sockets.push(socket);
-    } else {
+    }
+    else{
         socket.destroy();
     }
-
     if(sockets.length == 2){
         sockets[0].write('move, ' + JSON.stringify(combinations))
 
     }
-
     socket.on('data', function (data) {
         if(data.toString().indexOf('[') != -1) {
-            if (combinations.length > 0) {
+            if(combinations.length >= 0){
                 var currentData = JSON.parse(data.toString());
                 var position = currentData[0];
                 combinations = currentData[1];
@@ -41,28 +40,28 @@ var server = net.createServer(function(socket) {
                     setPosition(current, field, position);
                     console.log('field');
                     console.log(field);
-                    if (checkWinner(field)) {
-                        for (var i = 0; i < sockets.length; i++) {
+                    if(checkWinner(field)){
+                        for(var i = 0; i < sockets.length; i ++){
                             console.log('The winner is ' + socketsName[current]);
                             sockets[i].write('The winner is ' + socketsName[current]);
                             sockets[i].destroy();
                         }
-                    } else if (!checkWinner(field) && combinations.length == 1) {
-                        for (var j = 0; j < sockets.length; j++) {
-                            console.log('Draw');
-                            sockets[j].write('Draw!');
-                            sockets[j].destroy();
+                    }
+                    else if(!checkWinner(field) && combinations.length == 0){
+                        for(var i = 0; i < sockets.length; i ++){
+                            console.log('The game is finished, you both lost');
+                            sockets[i].write('The game is finished, you both lost');
+                            sockets[i].destroy();
                         }
-                    } else {
+                    }
+                    else{
                         current = current ? 0 : 1;
                         sockets[current].write('move, ' + JSON.stringify(combinations))
                     }
                 }
-
             }
         }
-
-    });
+    })
 }).listen(7777, function() {
     console.log('Server is running!');
 });
@@ -73,27 +72,26 @@ function setPosition(current, field, comb) {
     field[position1][position2] = current;
 }
 
-function checkWinner(field) {
-    console.log('fields: ' + field[0][0], field[0][1]);
-    if (field[0][0] !== undefined && field[1][0] !== undefined && field[2][0] !== undefined && field[0][0] == field[1][0] && field[1][0] == field[2][0]) {
+function checkWinner(field){
+    if(field[0][0] !== undefined && field[1][0] !== undefined && field[2][0] !== undefined && field[0][0] == field[1][0] && field[1][0] == field[2][0]){
         return true;
     }
-    if (field[0][1] !== undefined && field[1][1] !== undefined && field[2][1] !== undefined && field[0][1] == field[1][1] && field[1][1] == field[2][1]) {
+    if(field[0][1] !== undefined && field[1][1] !== undefined && field[2][1] !== undefined && field[0][1] == field[1][1] && field[1][1] == field[2][1]){
         return true;
     }
-    if (field[0][2] !== undefined && field[1][2] !== undefined && field[2][2] !== undefined && field[0][2] == field[1][2] && field[1][2] == field[2][2]) {
+    if(field[0][2] !== undefined && field[1][2] !== undefined && field[2][2] !== undefined && field[0][2] == field[1][2] && field[1][2] == field[2][2]){
         return true;
     }
-    if (field[0][0] !== undefined && field[1][1] !== undefined && field[2][2] !== undefined && field[0][0] == field[1][1] && field[1][1] == field[2][2]) {
+    if(field[0][0] !== undefined && field[1][1] !== undefined && field[2][2] !== undefined && field[0][0] == field[1][1] && field[1][1] == field[2][2]){
         return true;
     }
-    if (field[0][2] !== undefined && field[1][1] !== undefined && field[2][0] !== undefined && field[0][2] == field[1][1] && field[1][1] == field[2][0]) {
+    if(field[0][2] !== undefined && field[1][1] !== undefined && field[2][0] !== undefined && field[0][2] == field[1][1] && field[1][1] == field[2][0]){
         return true;
     }
-    else {
-        for (var i = 0; i < field.length; i++) {
-            for (var j = 0; j < field[i].length; j++) {
-                if (field[i][j] === field[i][j + 1] && field[i][j + 1] == field[i][j + 2]) {
+    else{
+        for(var i = 0; i < field.length; i ++){
+            for (var j = 0; j < field[i].length; j++){
+                if(field[i][j] === field[i][j + 1] && field[i][j + 1] == field[i][j + 2]){
                     return true;
                 }
             }
