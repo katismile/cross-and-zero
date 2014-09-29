@@ -1,12 +1,28 @@
 var net = require('net'),
-    move = require('./move');
+    move = require('./move'),
+    argv = require('optimist').argv;
 
-var client = new net.Socket();
+if(argv.c) {
+    for(var j = 0; j < argv.c; j++) {
+        createSocket();
+    }
+} else {
+    createSocket();
+}
 
-client.connect(7777, function() {
-    client.write('Hello Server!');
-});
+function createSocket() {
+    var client = new net.Socket();
 
-client.on('data', function(data) {
-    move(client, data.toString());
-});
+    client.connect(7777, function() {
+        this.write('Hello Server!');
+    });
+
+    client.on('data', function(data) {
+        if(data.toString().indexOf('[') != -1) {
+            move(client, data.toString());
+        }
+    });
+    client.on('end', function() {
+        this.write('Disconnect to the server!');
+    });
+}
