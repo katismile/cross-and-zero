@@ -11,18 +11,21 @@ if(argv.c) {
 }
 
 function createSocket() {
-    var client = new net.Socket();
+    var client = new net.Socket( {
+        allowHalfOpen: true,
+        readable: true,
+        writable: true
+    });
 
     client.connect(7777, function() {
-        this.write('Hello Server!');
+        client.write('Hello Server!');
     });
 
     client.on('data', function(data) {
         if(data.toString().indexOf('[') != -1) {
-            move(client, data.toString());
+            setTimeout(function() {
+                move(client, data.toString());
+            }, 3000);
         }
-    });
-    client.on('end', function() {
-        this.write('Disconnect to the server!');
     });
 }
