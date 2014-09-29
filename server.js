@@ -10,45 +10,49 @@ var Game = function(id, combinations, field, socketsName, sockets){
     this.field = field;
     this.current = 0;
     this.socketsName = socketsName;
-    this.sockets = sockets
+    this.sockets = sockets;
 };
+function start(){
+    var socketsName = {
+        0 : 'Cross',
+        1: 'Zeroes'
+    };
+    var combinations = [
+        [0, 0],
+        [0, 1],
+        [0, 2],
+        [1, 0],
+        [1, 1],
+        [1, 2],
+        [2, 0],
+        [2, 1],
+        [2, 2]
+    ];
+    var field = [[],[],[]];
+    var couple = sockets;
+    sockets = [];
+    games[i] = new Game(i, combinations, field, socketsName, couple);
+    var message = [games[i].id, games[i].combinations];
+    games[i].sockets[games[i].current].write(JSON.stringify(message));
+    games[i].current = games[i].current ? 0 : 1;
+    i++;
+}
 var server = net.createServer(function(socket) {
     console.log('connect');
     if (sockets.length < 2) {
+        socket.gameId = i;
         sockets.push(socket);
     }
     if (sockets.length == 2) {
-        var socketsName = {
-            0 : 'Cross',
-            1: 'Zeroes'
-        };
-        var combinations = [
-            [0, 0],
-            [0, 1],
-            [0, 2],
-            [1, 0],
-            [1, 1],
-            [1, 2],
-            [2, 0],
-            [2, 1],
-            [2, 2]
-        ];
-        var field = [[],[],[]];
-        var couple = sockets;
-        sockets = [];
-        console.log(field, i);
-        games[i] = new Game(i, combinations, field, socketsName, couple);
-        console.log('current field: ' + games[i].field);
-        var message = [games[i].id, games[i].combinations];
-        games[i].sockets[0].write(JSON.stringify(message));
-        i++;
+        start(games, i);
     }
     socket.on('data', function(data){
         var message = data.toString();
-        var pasreMessage = JSON.parse(message);
-        var id = pasreMessage[0];
         if(message.indexOf('[') !== -1){
-            if(games[id].combinations.length >=0){
+            var pasreMessage = JSON.parse(message);
+            var id = pasreMessage[0];
+
+            if(games[id] && games[id].combinations.length >=0  && games[id].sockets.length == 2){
                 var combination = pasreMessage[1];
                 games[id].combinations = pasreMessage[2];
                 if(combination.length == 2){
@@ -69,12 +73,23 @@ var server = net.createServer(function(socket) {
                         }
                     }
                     else{
-                        games[id].current = games[id].current ? 0 : 1;
                         var secondMessage = [games[id].id, games[id].combinations];
                         games[id].sockets[games[id].current].write(JSON.stringify(secondMessage));
+                        games[id].current = games[id].current ? 0 : 1;
                     }
                 }
             }
+        }
+    });
+
+    socket.on('end', function(){
+        var gameId = socket.gameId;
+        var sock = socket == games[gameId].sockets[0] ? games[gameId].sockets[1] : games[gameId].sockets[0];
+        games[gameId] = null;
+        sock.gameId = i;
+        sockets.push(sock);
+        if(sockets.length == 2){
+            start();
         }
     })
 
