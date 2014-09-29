@@ -1,3 +1,6 @@
+/**
+ * Created by chegrinets on 9/29/2014.
+ */
 var TikTakToe = {
     sockets: [],
     games: [],
@@ -25,7 +28,6 @@ var TikTakToe = {
         console.log('current field: ' + this.games[i].field);
         var message = [this.games[i].id, this.games[i].combinations];
         this.games[i].sockets[0].write(JSON.stringify(message));
-        i++;
     },
     setPosition: function(current, field, comb) {
         var position1 = comb[0],
