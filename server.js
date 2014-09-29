@@ -1,67 +1,83 @@
 var net = require('net');
+var checkWinner = require('./check_winner');
 var sockets = [];
-var socketsName = {
-    0 : 'Cross',
-    1: 'Zeroes'
-};
-var current = 0;
-var combinations = [
-    [0, 0],
-    [0, 1],
-    [0, 2],
-    [1, 0],
-    [1, 1],
-    [1, 2],
-    [2, 0],
-    [2, 1],
-    [2, 2]
-];
-var field = [[],[],[]];
+var games = [];
+var i = 0;
 
+var Game = function(id, combinations, field, socketsName, sockets){
+    this.id = id;
+    this.combinations = combinations;
+    this.field = field;
+    this.current = 0;
+    this.socketsName = socketsName;
+    this.sockets = sockets
+};
 var server = net.createServer(function(socket) {
     console.log('connect');
-    if(sockets.length < 2){
+    if (sockets.length < 2) {
         sockets.push(socket);
     }
-    else{
-        socket.destroy();
+    if (sockets.length == 2) {
+        var socketsName = {
+            0 : 'Cross',
+            1: 'Zeroes'
+        };
+        var combinations = [
+            [0, 0],
+            [0, 1],
+            [0, 2],
+            [1, 0],
+            [1, 1],
+            [1, 2],
+            [2, 0],
+            [2, 1],
+            [2, 2]
+        ];
+        var field = [[],[],[]];
+        var couple = sockets;
+        sockets = [];
+        console.log(field, i);
+        games[i] = new Game(i, combinations, field, socketsName, couple);
+        console.log('current field: ' + games[i].field);
+        var message = [games[i].id, games[i].combinations];
+        games[i].sockets[0].write(JSON.stringify(message));
+        i++;
     }
-    if(sockets.length == 2){
-        sockets[0].write('move, ' + JSON.stringify(combinations))
-
-    }
-    socket.on('data', function (data) {
-        if(data.toString().indexOf('[') != -1) {
-            if(combinations.length >= 0){
-                var currentData = JSON.parse(data.toString());
-                var position = currentData[0];
-                combinations = currentData[1];
-                if (position.length == 2) {
-                    setPosition(current, field, position);
-                    console.log('field');
-                    console.log(field);
-                    if(checkWinner(field)){
-                        for(var i = 0; i < sockets.length; i ++){
-                            console.log('The winner is ' + socketsName[current]);
-                            sockets[i].write('The winner is ' + socketsName[current]);
-                            sockets[i].destroy();
+    socket.on('data', function(data){
+        var message = data.toString();
+        var pasreMessage = JSON.parse(message);
+        var id = pasreMessage[0];
+        if(message.indexOf('[') !== -1){
+            if(games[id].combinations.length >=0){
+                var combination = pasreMessage[1];
+                games[id].combinations = pasreMessage[2];
+                if(combination.length == 2){
+                    setPosition(games[id].current, games[id].field, combination);
+                    console.log(games[id].field);
+                    if(checkWinner(games[id].field)){
+                        for(var k = 0; k < games[id].sockets.length; k++){
+                            console.log('The winner is ' + games[id].socketsName[games[id].current]);
+                            games[id].sockets[k].write('The winner is ' + games[id].socketsName[games[id].current]);
+                            games[id].sockets[k].destroy();
                         }
                     }
-                    else if(!checkWinner(field) && combinations.length == 0){
-                        for(var i = 0; i < sockets.length; i ++){
+                    else if( !checkWinner(games[id].field) && games[id].combinations.length == 0){
+                        for(var j = 0; j < games[id].sockets.length; j++){
                             console.log('The game is finished, you both lost');
-                            sockets[i].write('The game is finished, you both lost');
-                            sockets[i].destroy();
+                            games[id].sockets[j].write('The game is finished, you both lost');
+                            games[id].sockets[j].destroy();
                         }
                     }
                     else{
-                        current = current ? 0 : 1;
-                        sockets[current].write('move, ' + JSON.stringify(combinations))
+                        games[id].current = games[id].current ? 0 : 1;
+                        var secondMessage = [games[id].id, games[id].combinations];
+                        games[id].sockets[games[id].current].write(JSON.stringify(secondMessage));
                     }
                 }
             }
         }
     })
+
 }).listen(7777, function() {
     console.log('Server is running!');
 });
@@ -70,32 +86,4 @@ function setPosition(current, field, comb) {
     var position1 = comb[0],
         position2 = comb[1];
     field[position1][position2] = current;
-}
-
-function checkWinner(field){
-    if(field[0][0] !== undefined && field[1][0] !== undefined && field[2][0] !== undefined && field[0][0] == field[1][0] && field[1][0] == field[2][0]){
-        return true;
-    }
-    if(field[0][1] !== undefined && field[1][1] !== undefined && field[2][1] !== undefined && field[0][1] == field[1][1] && field[1][1] == field[2][1]){
-        return true;
-    }
-    if(field[0][2] !== undefined && field[1][2] !== undefined && field[2][2] !== undefined && field[0][2] == field[1][2] && field[1][2] == field[2][2]){
-        return true;
-    }
-    if(field[0][0] !== undefined && field[1][1] !== undefined && field[2][2] !== undefined && field[0][0] == field[1][1] && field[1][1] == field[2][2]){
-        return true;
-    }
-    if(field[0][2] !== undefined && field[1][1] !== undefined && field[2][0] !== undefined && field[0][2] == field[1][1] && field[1][1] == field[2][0]){
-        return true;
-    }
-    else{
-        for(var i = 0; i < field.length; i ++){
-            for (var j = 0; j < field[i].length; j++){
-                if(field[i][j] === field[i][j + 1] && field[i][j + 1] == field[i][j + 2]){
-                    return true;
-                }
-            }
-        }
-    }
-    return false;
 }
