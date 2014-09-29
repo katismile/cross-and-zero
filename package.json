@@ -1,0 +1,7 @@
+{
+    "name": "tic-tac-toe",
+    "version": "0.0.1",
+    "dependencies": {
+        "optimist" : "latest"
+    }
+}
