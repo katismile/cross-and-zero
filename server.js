@@ -16,13 +16,16 @@ var server = net.createServer(function(socket) {
     socket.on('data', function(data){
         var message = data.toString();
 
-        if(message.indexOf('[') !== -1){
-            tik_tak_toe.move(message);
-        }
+        tik_tak_toe.controller(message);
     });
     socket.on('end', function() {
         gameId =  socket.gameId;
         console.log('the end! game id ' +  gameId);
+
+        if(tik_tak_toe.sockets.indexOf(socket) != -1) {
+            var index = tik_tak_toe.sockets.indexOf(socket);
+            tik_tak_toe.sockets.splice(index, 1);
+        }
 
         if(tik_tak_toe.games[gameId]) {
             var newSocket = socket ==  tik_tak_toe.games[gameId].sockets[0] ?  tik_tak_toe.games[gameId].sockets[1] :  tik_tak_toe.games[gameId].sockets[0];

@@ -22,9 +22,8 @@ var TikTakToe = {
         var field = [[],[],[]];
         var couple = this.sockets;
         this.sockets = [];
-        console.log(field, i);
+        console.log("Game " + i + " is started!");
         this.games[i] = new this.createGame(i, combinations, field, socketsName, couple);
-        console.log('current field: ' + this.games[i].field);
         var message = [this.games[i].id, this.games[i].combinations];
         this.games[i].sockets[0].write(JSON.stringify(message));
     },
@@ -108,7 +107,7 @@ var TikTakToe = {
             TikTakToe.games[id].combinations = parseMessage[2];
             if(combination.length == 2){
                 TikTakToe.setPosition( TikTakToe.games[id].current,  TikTakToe.games[id].field, combination);
-                //console.log( TikTakToe.games[id].field);
+
                 if(TikTakToe.checkWinner( TikTakToe.games[id].field)){
                     for(var k = 0; k <  TikTakToe.games[id].sockets.length; k++){
                         console.log('The winner is ' +  TikTakToe.games[id].socketsName[ TikTakToe.games[id].current]);
@@ -124,11 +123,16 @@ var TikTakToe = {
                 else{
                     TikTakToe.games[id].current =  TikTakToe.games[id].current ? 0 : 1;
                     var secondMessage = [ TikTakToe.games[id].id,  TikTakToe.games[id].combinations];
-                    //console.log('Current ' +  TikTakToe.games[id].current);
                     TikTakToe.games[id].sockets[ TikTakToe.games[id].current].write(JSON.stringify(secondMessage));
                 }
             }
         }
+    },
+    controller: function(message) {
+        if(message.indexOf('[') !== -1) {
+            this.move(message);
+        }
     }
+
 };
 module.exports = TikTakToe;
