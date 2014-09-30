@@ -1,5 +1,4 @@
 var net = require('net');
-var Table = require('cli-table');
 var checkWinner = require('./check_winner');
 var Game = require('./Game');
 var sockets = [];
@@ -24,18 +23,17 @@ var server = net.createServer(function(socket) {
                 games[id].combinations = JSON.parse(message)[2];
                 if (combination.length == 2) {
                     setPosition(games[id].current, games[id].field, combination);
-                    var table = new Table ({ chars: chars });
-                    table.push(games[id].field[0], games[id].field[1], games[id].field[2]);
-                    console.log(table.toString());
                     if (checkWinner(games[id].field)) {
-                        messager(games[id].sockets, 'The winner is ' + games[id].socketsName[games[id].current]);
+                        var winnerMessage = [games[id].field, 'The winner is ' + games[id].socketsName[games[id].current]];
+                        messager(games[id].sockets, JSON.stringify(winnerMessage));
                     }
                     else if ( !checkWinner(games[id].field) && games[id].combinations.length == 0) {
-                        messager(games[id].sockets, 'The game is finished, both of you lost');
+                        var lostMessage = [games[id].field, 'The game is finished, both of you lost'];
+                        messager(games[id].sockets, JSON.stringify(lostMessage));
                     }
                     else {
                         games[id].current = games[id].current == 1 ? 0 : 1;
-                        var secondMessage = [games[id].id, games[id].combinations];
+                        var secondMessage = [games[id].id, games[id].combinations, games[id].field];
                         games[id].sockets[games[id].current].write(JSON.stringify(secondMessage));
 
                     }
@@ -74,7 +72,7 @@ function setPosition(current, field, comb) {
 function start() {
     var socketsName = {
         1 : 'Cross',
-        0 : 'Zeroes'
+        0 : 'Zero'
     };
     var combinations = [
         [0, 0],
@@ -92,8 +90,8 @@ function start() {
     sockets = [];
     games[i] = new Game(i, combinations, field, socketsName, couple);
     var message = [games[i].id, games[i].combinations];
+    //messager(games[i].sockets, 'New game is stated');
     games[i].sockets[games[i].current].write(JSON.stringify(message));
-    //games[i].current = games[i].current == 1 ? 0 : 1;
     i++;
 }
 function messager(sockets, message) {
@@ -102,7 +100,4 @@ function messager(sockets, message) {
         sockets[j].destroy();
     }
 }
-var chars = { 'top': '═' , 'top-mid': '╤' , 'top-left': '╔' , 'top-right': '╗'
-    , 'bottom': '═' , 'bottom-mid': '╧' , 'bottom-left': '╚' , 'bottom-right': '╝'
-    , 'left': '║' , 'left-mid': '╟' , 'mid': '─' , 'mid-mid': '┼'
-    , 'right': '║' , 'right-mid': '╢' , 'middle': '│' };
+
