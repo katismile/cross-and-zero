@@ -1,4 +1,5 @@
 var net = require('net');
+var Table = require('cli-table');
 var checkWinner = require('./check_winner');
 var Game = require('./Game');
 var sockets = [];
@@ -23,17 +24,24 @@ var server = net.createServer(function(socket) {
                 games[id].combinations = JSON.parse(message)[2];
                 if(combination.length == 2){
                     setPosition(games[id].current, games[id].field, combination);
-                    console.log(games[id].field);
+                    var table = new Table({
+                        chars: { 'top': '═' , 'top-mid': '╤' , 'top-left': '╔' , 'top-right': '╗'
+                            , 'bottom': '═' , 'bottom-mid': '╧' , 'bottom-left': '╚' , 'bottom-right': '╝'
+                            , 'left': '║' , 'left-mid': '╟' , 'mid': '─' , 'mid-mid': '┼'
+                            , 'right': '║' , 'right-mid': '╢' , 'middle': '│' }
+                    });
+                    table.push(games[id].field[0], games[id].field[1], games[id].field[2]);
+                    console.log(table.toString());
                     if(checkWinner(games[id].field)){
                         messager(games[id].sockets, 'The winner is ' + games[id].socketsName[games[id].current]);
                     }
                     else if( !checkWinner(games[id].field) && games[id].combinations.length == 0){
-                        messager(games[id].sockets, 'The game is finished, you both lost');
+                        messager(games[id].sockets, 'The game is finished, both of you lost');
                     }
                     else{
                         var secondMessage = [games[id].id, games[id].combinations];
                         games[id].sockets[games[id].current].write(JSON.stringify(secondMessage));
-                        games[id].current = games[id].current ? 0 : 1;
+                        games[id].current = games[id].current == 1 ? 0 : 1;
                     }
                 }
             }
@@ -58,12 +66,12 @@ var server = net.createServer(function(socket) {
 function setPosition(current, field, comb) {
     var position1 = comb[0],
         position2 = comb[1];
-    field[position1][position2] = current;
+    field[position1][position2] = current == 1 ? 'x' : 0;
 }
 function start(){
     var socketsName = {
-        0 : 'Cross',
-        1: 'Zeroes'
+        1 : 'Cross',
+        0 : 'Zeroes'
     };
     var combinations = [
         [0, 0],
@@ -76,13 +84,13 @@ function start(){
         [2, 1],
         [2, 2]
     ];
-    var field = [[],[],[]];
+    var field = [[' ', ' ', ' '],[' ', ' ', ' '],[' ', ' ', ' ']];
     var couple = sockets;
     sockets = [];
     games[i] = new Game(i, combinations, field, socketsName, couple);
     var message = [games[i].id, games[i].combinations];
     games[i].sockets[games[i].current].write(JSON.stringify(message));
-    games[i].current = games[i].current ? 0 : 1;
+    games[i].current = games[i].current == 1 ? 0 : 1;
     i++;
 }
 function messager(sockets, message){

@@ -20,7 +20,7 @@ function createSocket() {
     });
 
     client.on('data', function(data) {
-        if(data.toString().indexOf('winner') !== -1 || data.toString().indexOf('lost')){
+        if(data.toString().indexOf('winner') !== -1 || data.toString().indexOf('lost') !== -1){
             console.log(data.toString());
         }
         if(data.toString().indexOf('[') != -1) {
@@ -29,7 +29,6 @@ function createSocket() {
             if(position != -1) {
                 setTimeout(function(){
                     var parseString = message.slice(position, message.length);
-                    console.log("parseString " + parseString);
                     var newArray = JSON.parse(parseString);
                     var gameId = newArray[0];
                     var combinatons = newArray[1];
