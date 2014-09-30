@@ -50,7 +50,7 @@ var server = net.createServer(function(socket) {
             sockets.splice(index, 1);
         }
         var gameId = socket.gameId;
-        if (games[gameId]){
+        if (games[gameId]) {
             var sock = socket == games[gameId].sockets[0] ? games[gameId].sockets[1] : games[gameId].sockets[0];
             sock.write('You opponent has left, please wait for another player');
             games[gameId] = null;

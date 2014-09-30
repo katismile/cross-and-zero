@@ -6,7 +6,8 @@ if (argv.c) {
     for(var j = 0; j < argv.c; j++) {
         createSocket();
     }
-} else {
+}
+else {
     createSocket();
 }
 
@@ -25,7 +26,6 @@ function createSocket() {
             console.log(data.toString());
         }
         if (message.indexOf('[') !== -1) {
-            //console.log(message);
             var parseMessage = JSON.parse(message);
                 setTimeout(function(){
                     var gameId = parseMessage[0];
