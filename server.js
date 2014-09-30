@@ -25,10 +25,7 @@ var server = net.createServer(function(socket) {
                 if (combination.length == 2) {
                     setPosition(games[id].current, games[id].field, combination);
                     var table = new Table ({
-                        chars: { 'top': '═' , 'top-mid': '╤' , 'top-left': '╔' , 'top-right': '╗'
-                            , 'bottom': '═' , 'bottom-mid': '╧' , 'bottom-left': '╚' , 'bottom-right': '╝'
-                            , 'left': '║' , 'left-mid': '╟' , 'mid': '─' , 'mid-mid': '┼'
-                            , 'right': '║' , 'right-mid': '╢' , 'middle': '│' }
+                        chars: chars
                     });
                     table.push(games[id].field[0], games[id].field[1], games[id].field[2]);
                     console.log(table.toString());
@@ -65,7 +62,6 @@ var server = net.createServer(function(socket) {
             }
         }
     })
-
 }).listen(7777, function() {
     console.log('Server is running!');
 });
@@ -107,4 +103,7 @@ function messager(sockets, message) {
         sockets[j].destroy();
     }
 }
-
+var chars = { 'top': '═' , 'top-mid': '╤' , 'top-left': '╔' , 'top-right': '╗'
+    , 'bottom': '═' , 'bottom-mid': '╧' , 'bottom-left': '╚' , 'bottom-right': '╝'
+    , 'left': '║' , 'left-mid': '╟' , 'mid': '─' , 'mid-mid': '┼'
+    , 'right': '║' , 'right-mid': '╢' , 'middle': '│' };
