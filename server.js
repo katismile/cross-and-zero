@@ -24,9 +24,7 @@ var server = net.createServer(function(socket) {
                 games[id].combinations = JSON.parse(message)[2];
                 if (combination.length == 2) {
                     setPosition(games[id].current, games[id].field, combination);
-                    var table = new Table ({
-                        chars: chars
-                    });
+                    var table = new Table ({ chars: chars });
                     table.push(games[id].field[0], games[id].field[1], games[id].field[2]);
                     console.log(table.toString());
                     if (checkWinner(games[id].field)) {
@@ -47,17 +45,18 @@ var server = net.createServer(function(socket) {
     });
 
     socket.on('end', function() {
-        if(sockets.indexOf(socket) != -1){
+        if (sockets.indexOf(socket) != -1) {
             var index = sockets.indexOf(socket);
             sockets.splice(index, 1);
         }
         var gameId = socket.gameId;
-        if(games[gameId]){
+        if (games[gameId]){
             var sock = socket == games[gameId].sockets[0] ? games[gameId].sockets[1] : games[gameId].sockets[0];
+            sock.write('You opponent has left, please wait for another player');
             games[gameId] = null;
             sock.gameId = i;
             sockets.push(sock);
-            if(sockets.length == 2){
+            if(sockets.length == 2) {
                 start();
             }
         }

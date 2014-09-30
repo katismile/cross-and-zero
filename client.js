@@ -21,7 +21,7 @@ function createSocket() {
 
     client.on('data', function(data) {
         var message = data.toString();
-        if (data.toString().indexOf('winner') !== -1 || data.toString().indexOf('lost') !== -1) {
+        if (data.toString().indexOf('winner') !== -1 || data.toString().indexOf('lost') !== -1 || data.toString().indexOf('left') !== -1) {
             console.log(data.toString());
         }
         if (message.indexOf('[') !== -1) {
