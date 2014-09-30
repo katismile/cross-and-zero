@@ -1,6 +1,5 @@
-/**
- * Created by chegrinets on 9/29/2014.
- */
+var Table = require('cli-table');
+
 var TikTakToe = {
     sockets: [],
     games: [],
@@ -33,6 +32,37 @@ var TikTakToe = {
         var position1 = comb[0],
             position2 = comb[1];
         field[position1][position2] = current;
+        var table = new Table({
+            chars: { 'top': '═' , 'top-mid': '╤' , 'top-left': '╔' , 'top-right': '╗'
+                , 'bottom': '═' , 'bottom-mid': '╧' , 'bottom-left': '╚' , 'bottom-right': '╝'
+                , 'left': '║' , 'left-mid': '╟' , 'mid': '─' , 'mid-mid': '┼'
+                , 'right': '║' , 'right-mid': '╢' , 'middle': '│' }
+        });
+
+        array = [];
+
+        for(var i = 0; i<field.length; i++) {
+            var newArr = [];
+            for(var j = 0; j < 3; j++) {
+                if(field[i][j] != undefined) {
+                    if(field[i][j] == 0) {
+                        newArr.push('X');
+                    }
+                    if(field[i][j] == 1) {
+                        newArr.push('O');
+                    }
+                } else {
+                    newArr.push('');
+                }
+            }
+            array.push(newArr);
+        }
+        table.push(
+            array[0]
+            , array[1]
+            , array[2]
+        );
+        console.log(table.toString());
     },
     checkWinner: function(field) {
         if (field[0][0] !== undefined && field[1][0] !== undefined && field[2][0] !== undefined && field[0][0] == field[1][0] && field[1][0] == field[2][0]) {
@@ -78,7 +108,7 @@ var TikTakToe = {
             TikTakToe.games[id].combinations = parseMessage[2];
             if(combination.length == 2){
                 TikTakToe.setPosition( TikTakToe.games[id].current,  TikTakToe.games[id].field, combination);
-                console.log( TikTakToe.games[id].field);
+                //console.log( TikTakToe.games[id].field);
                 if(TikTakToe.checkWinner( TikTakToe.games[id].field)){
                     for(var k = 0; k <  TikTakToe.games[id].sockets.length; k++){
                         console.log('The winner is ' +  TikTakToe.games[id].socketsName[ TikTakToe.games[id].current]);
@@ -94,7 +124,7 @@ var TikTakToe = {
                 else{
                     TikTakToe.games[id].current =  TikTakToe.games[id].current ? 0 : 1;
                     var secondMessage = [ TikTakToe.games[id].id,  TikTakToe.games[id].combinations];
-                    console.log('Current ' +  TikTakToe.games[id].current);
+                    //console.log('Current ' +  TikTakToe.games[id].current);
                     TikTakToe.games[id].sockets[ TikTakToe.games[id].current].write(JSON.stringify(secondMessage));
                 }
             }
