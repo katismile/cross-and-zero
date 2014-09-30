@@ -117,7 +117,7 @@ var TikTakToe = {
                 else if( !TikTakToe.checkWinner( TikTakToe.games[id].field) &&  TikTakToe.games[id].combinations.length == 0){
                     for(var j = 0; j <  TikTakToe.games[id].sockets.length; j++){
                         console.log('The game is finished, you both lost');
-                        TikTakToe.games[id].sockets[j].write('The game is finished, you both lost');
+                        TikTakToe.games[id].sockets[j].write('The game is finished, both of you are lost');
                     }
                 }
                 else{
