@@ -67,12 +67,12 @@ function setPosition(current, field, comb) {
     var position1 = comb[0],
         position2 = comb[1];
 
-    field[position1][position2] = current == 1 ? 'x' : 0;
+    field[position1][position2] = current == 1 ? 0 : 'x';
 }
 function start() {
     var socketsName = {
-        1 : 'Cross',
-        0 : 'Zero'
+        0 : 'Cross',
+        1 : 'Zero'
     };
     var combinations = [
         [0, 0],

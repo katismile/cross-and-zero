@@ -1,7 +1,6 @@
 var net = require('net');
 var Table = require('cli-table');
 var argv = require('optimist').argv;
-var inquirer = require('inquirer');
 
 if (argv.c) {
     for(var j = 0; j < argv.c; j++) {
@@ -41,35 +40,19 @@ function createSocket() {
                 table.push(parseMessage[2][0], parseMessage[2][1], parseMessage[2][2]);
                 console.log(table.toString());
             }
+            setTimeout(function(){
                 var gameId = parseMessage[0];
                 var combinations = parseMessage[1];
+                var length = combinations.length;
+                var value = Math.floor(Math.random()*length);
+                var combination = combinations.splice(value, 1)[0];
                 var senddata = [];
-                var choices = [];
-
-                for(var i = 0; i < combinations.length; i++) {
-                    choices.push(JSON.stringify(combinations[i]));
-                }
-                inquirer.prompt([
-                    {
-                        type: 'list',
-                        name: 'position',
-                        message: 'Choose position',
-                        choices: choices
-                    }
-                ], function (answer) {
-                    var combination = answer.position;
-                    for(var i = 0; i < combinations.length; i++){
-                        if(combinations[i] + "" == JSON.parse(combination)){
-                            combinations.splice(i, 1)
-                        }
-                    }
-                    senddata.push(gameId);
-                    senddata.push(JSON.parse(combination));
-                    senddata.push(combinations);
-                    var str = JSON.stringify(senddata);
-                    client.write(str);
-                });
-
+                senddata.push(gameId);
+                senddata.push(combination);
+                senddata.push(combinations);
+                var str = JSON.stringify(senddata);
+                client.write(str);
+            }, 2000)
         }
     });
 }
