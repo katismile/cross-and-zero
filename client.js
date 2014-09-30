@@ -24,7 +24,8 @@ function createSocket() {
         if (data.toString().indexOf('winner') !== -1 || data.toString().indexOf('lost') !== -1) {
             console.log(data.toString());
         }
-        if (message) {
+        if (message.indexOf('[') !== -1) {
+            //console.log(message);
             var parseMessage = JSON.parse(message);
                 setTimeout(function(){
                     var gameId = parseMessage[0];

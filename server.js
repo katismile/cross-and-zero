@@ -39,9 +39,10 @@ var server = net.createServer(function(socket) {
                         messager(games[id].sockets, 'The game is finished, both of you lost');
                     }
                     else {
+                        games[id].current = games[id].current == 1 ? 0 : 1;
                         var secondMessage = [games[id].id, games[id].combinations];
                         games[id].sockets[games[id].current].write(JSON.stringify(secondMessage));
-                        games[id].current = games[id].current == 1 ? 0 : 1;
+
                     }
                 }
             }
@@ -49,10 +50,9 @@ var server = net.createServer(function(socket) {
     });
 
     socket.on('end', function() {
-        for (var i = 0; i < sockets.length; i++) {
-            if (sockets[i] == socket) {
-                sockets.splice(i, 1);
-            }
+        if(sockets.indexOf(socket) != -1){
+            var index = sockets.indexOf(socket);
+            sockets.splice(index, 1);
         }
         var gameId = socket.gameId;
         if(games[gameId]){
@@ -92,14 +92,13 @@ function start() {
         [2, 1],
         [2, 2]
     ];
-
     var field = [[' ', ' ', ' '],[' ', ' ', ' '],[' ', ' ', ' ']];
     var couple = sockets;
     sockets = [];
     games[i] = new Game(i, combinations, field, socketsName, couple);
     var message = [games[i].id, games[i].combinations];
     games[i].sockets[games[i].current].write(JSON.stringify(message));
-    games[i].current = games[i].current == 1 ? 0 : 1;
+    //games[i].current = games[i].current == 1 ? 0 : 1;
     i++;
 }
 function messager(sockets, message) {
