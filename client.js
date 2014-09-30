@@ -20,11 +20,7 @@ function createSocket() {
     });
 
     client.on('data', function(data) {
-<<<<<<< HEAD
         if(data.toString().indexOf('winner') !== -1 || data.toString().indexOf('lost') !== -1){
-=======
-        if(data.toString().indexOf('winner') !== -1 || data.toString().indexOf('lost')){
->>>>>>> c04ffb733e1b54392226a74de2a1aa68a94a58b4
             console.log(data.toString());
         }
         if(data.toString().indexOf('[') != -1) {
@@ -33,10 +29,6 @@ function createSocket() {
             if(position != -1) {
                 setTimeout(function(){
                     var parseString = message.slice(position, message.length);
-<<<<<<< HEAD
-=======
-                    console.log("parseString " + parseString);
->>>>>>> c04ffb733e1b54392226a74de2a1aa68a94a58b4
                     var newArray = JSON.parse(parseString);
                     var gameId = newArray[0];
                     var combinatons = newArray[1];
@@ -55,9 +47,5 @@ function createSocket() {
             }
         }
     });
+}
 
-<<<<<<< HEAD
-}
-=======
-}
->>>>>>> c04ffb733e1b54392226a74de2a1aa68a94a58b4
