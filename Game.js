@@ -1,4 +1,4 @@
-module.exports = function(id, combinations, field, socketsName, sockets){
+module.exports = function (id, combinations, field, socketsName, sockets) {
     this.id = id;
     this.combinations = combinations;
     this.field = field;

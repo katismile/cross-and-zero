@@ -20,13 +20,13 @@ function createSocket() {
     });
 
     client.on('data', function(data) {
-        if(data.toString().indexOf('winner') !== -1 || data.toString().indexOf('lost') !== -1){
+        if (data.toString().indexOf('winner') !== -1 || data.toString().indexOf('lost') !== -1) {
             console.log(data.toString());
         }
-        if(data.toString().indexOf('[') != -1) {
+        if (data.toString().indexOf('[') != -1) {
             var message = data.toString();
             var position = message.indexOf('[');
-            if(position != -1) {
+            if (position != -1) {
                 setTimeout(function(){
                     var parseString = message.slice(position, message.length);
                     var newArray = JSON.parse(parseString);
