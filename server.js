@@ -19,7 +19,7 @@ var server = net.createServer(function(socket) {
         var message = data.toString();
         if (message.indexOf('[') !== -1) {
             var id = JSON.parse(message)[0];
-            if (games[id] && games[id].combinations.length >=0  && games[id].sockets.length == 2) {
+            if (games[id] && games[id].combinations.length >=0  && games[id].sockets.length === 2) {
                 var combination = JSON.parse(message)[1];
                 games[id].combinations = JSON.parse(message)[2];
                 if (combination.length == 2) {
@@ -49,7 +49,11 @@ var server = net.createServer(function(socket) {
     });
 
     socket.on('end', function() {
-
+        for (var i = 0; i < sockets.length; i++) {
+            if (sockets[i] == socket) {
+                sockets.splice(i, 1);
+            }
+        }
         var gameId = socket.gameId;
         if(games[gameId]){
             var sock = socket == games[gameId].sockets[0] ? games[gameId].sockets[1] : games[gameId].sockets[0];
