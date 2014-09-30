@@ -15,6 +15,7 @@ var server = net.createServer(function(socket) {
 
     socket.on('data', function(data){
         var message = data.toString();
+        console.log(message);
 
         tik_tak_toe.controller(message);
     });
