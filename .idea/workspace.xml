@@ -4,12 +4,7 @@
     <bookmark url="file://$PROJECT_DIR$/controller.js" line="21" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9645a934-9cb5-4bd1-a4eb-69f2165d7c0e" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/bot.js" afterPath="$PROJECT_DIR$/bot.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/client.js" afterPath="$PROJECT_DIR$/client.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server.js" afterPath="$PROJECT_DIR$/server.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-    </list>
+    <list default="true" id="9645a934-9cb5-4bd1-a4eb-69f2165d7c0e" name="Default" comment="" />
     <ignored path="cross-and-zero.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="TRACKING_ENABLED" value="true" />
