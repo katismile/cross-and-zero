@@ -19,44 +19,46 @@ function createSocket() {
     });
 
     client.connect(7777, function() {
-        client.write('Hello Server!');
+        client.write(JSON.stringify('Hello Server!'));
     });
 
     client.on('data', function(data) {
-        if(data.toString().indexOf('[') != -1) {
-            move(client, data.toString());
+        if(typeof JSON.parse(data.toString()) === 'object') {
+            obj = JSON.parse(data.toString());
+            obj.client = client;
+
+            move(obj);
+        }
+        if(typeof JSON.parse(data.toString()) === 'string') {
+            console.log(JSON.parse(data.toString()));
         }
     });
 }
 
-function move(client, message) {
-    var position = message.indexOf('[');
-    console.log(position);
-    if(position != -1) {
-        var parseString = message.slice(position, message.length),
-            newArray = JSON.parse(parseString),
-            gameId = newArray[0],
-            combinatons = newArray[1],
-            field = newArray[2],
-            current  = newArray[3];
+function move(message) {
 
-        setField(field);
+    var gameId = message.gameId,
+        combinations = message.combinations,
+        field = message.field,
+        current  = message.current;
 
-        var length = combinatons.length,
-            value = Math.floor(Math.random()*length),
-            combination = combinatons.splice(value, 1)[0];
-        field[combination[0]][combination[1]] = current;
 
-        setField(field);
+    setField(field);
 
-        data = [];
-        data.push(gameId);
-        data.push(combination);
-        data.push(combinatons);
-        data.push(field);
-        data.push(current);
+    var length = combinations.length,
+        value = Math.floor(Math.random()*length),
+        combination = combinations.splice(value, 1)[0];
+    field[combination[0]][combination[1]] = current;
 
-        var str = JSON.stringify(data);
-        client.write(str);
-    }
+    setField(field);
+
+    var newMessage = {
+        type: "move",
+        gameId: gameId,
+        combination: combination,
+        combinations: combinations,
+        field: field,
+        current: current
+    };
+    message.client.write(JSON.stringify(newMessage));
 }

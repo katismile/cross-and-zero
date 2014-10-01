@@ -14,10 +14,14 @@ var server = net.createServer(function(socket) {
     }
 
     socket.on('data', function(data){
-        var message = data.toString();
-        console.log(message);
-
-        tik_tak_toe.controller(message);
+        if(typeof JSON.parse(data.toString()) === 'string') {
+            console.log(JSON.parse(data.toString()));
+        }
+        if(typeof JSON.parse(data.toString()) === 'object') {
+            var message = JSON.parse(data.toString());
+            console.log('message '+ message);
+            tik_tak_toe.controller(message);
+        }
     });
     socket.on('end', function() {
         gameId =  socket.gameId;
@@ -31,7 +35,7 @@ var server = net.createServer(function(socket) {
         if(tik_tak_toe.games[gameId]) {
             var newSocket = socket ==  tik_tak_toe.games[gameId].sockets[0] ?  tik_tak_toe.games[gameId].sockets[1] :  tik_tak_toe.games[gameId].sockets[0];
             newSocket.gameId = i;
-            newSocket.write('Game is over. Your opponent is disconnected. Please, wait another opponent.');
+            newSocket.write(JSON.stringify('Game is over. Your opponent is disconnected. Please, wait another opponent.'));
             tik_tak_toe.games[gameId] = null;
             tik_tak_toe.sockets.push(newSocket);
 

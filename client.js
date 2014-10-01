@@ -1,6 +1,8 @@
 var net = require('net'),
-    move = require('./move'),
-    argv = require('optimist').argv;
+    move = require('./commands'),
+    argv = require('optimist').argv,
+    controller = require('./controller'),
+    commands = require('./commands');
 
 if(argv.c) {
     for(var j = 0; j < argv.c; j++) {
@@ -18,13 +20,18 @@ function createSocket() {
     });
 
     client.connect(7777, function() {
-        client.write('Hello Server!');
+        client.write(JSON.stringify('Hello Server!'));
     });
 
     client.on('data', function(data) {
-        console.log(data.toString());
-        if(data.toString().indexOf('[') != -1) {
-            move(client, data.toString());
+        if(typeof JSON.parse(data.toString()) === 'object') {
+            obj = JSON.parse(data.toString());
+            obj.client = client;
+
+            controller(commands, obj);
+        }
+        if(typeof JSON.parse(data.toString()) === 'string') {
+            console.log(JSON.parse(data.toString()));
         }
     });
 }
