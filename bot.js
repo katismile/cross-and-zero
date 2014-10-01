@@ -1,6 +1,6 @@
 var net = require('net'),
     argv = require('optimist').argv,
-    setField = require('./set_field');
+    commands = require('./commands');
 
 
 if(argv.c) {
@@ -43,14 +43,14 @@ function move(message) {
         current  = message.current;
 
 
-    setField(field);
+    commands.setField(field);
 
     var length = combinations.length,
         value = Math.floor(Math.random()*length),
         combination = combinations.splice(value, 1)[0];
     field[combination[0]][combination[1]] = current;
 
-    setField(field);
+    commands.setField(field);
 
     var newMessage = {
         type: "move",

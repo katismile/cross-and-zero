@@ -1,4 +1,4 @@
-var setField = require('./set_field');
+var commands = require('./commands');
 
 var TikTakToe = {
     sockets: [],
@@ -38,7 +38,7 @@ var TikTakToe = {
             position2 = comb[1];
         field[position1][position2] = current;
 
-        setField(field);
+        commands.setField(field);
     },
     checkWinner: function(field) {
         if (field[0][0] !== undefined && field[1][0] !== undefined && field[2][0] !== undefined && field[0][0] == field[1][0] && field[1][0] == field[2][0]) {
@@ -117,7 +117,6 @@ var TikTakToe = {
     controller: function(message) {
 
         if(typeof this[message.type] === 'function') {
-            console.log('tttttttttttttttttttttttttttt');
             this[message.type](message);
         }
     }
