@@ -16,7 +16,6 @@ var server = net.createServer(function(socket) {
     }
     socket.on('data', function(data) {
         var message = data.toString();
-        console.log(message);
         if (message.indexOf('[') !== -1) {
             var id = JSON.parse(message)[0];
             if (games[id] && games[id].combinations.length >=0  && games[id].sockets.length === 2) {
@@ -57,20 +56,26 @@ var server = net.createServer(function(socket) {
     });
 
     socket.on('end', function() {
+        console.log('gameId on end: ' + socket.gameId);
         if (sockets.indexOf(socket) != -1) {
+            console.log('in sockets');
             var index = sockets.indexOf(socket);
             sockets.splice(index, 1);
+            console.log(sockets);
         }
+
         var gameId = socket.gameId;
+        console.log(!!games[gameId]);
         if (games[gameId]) {
             var sock = socket == games[gameId].sockets[0] ? games[gameId].sockets[1] : games[gameId].sockets[0];
             var message = {
                 setting: 'opponent exit',
                 message: 'You opponent has left, please wait for another player'
             };
+//            console.log('i' + i);
+            sock.gameId = i;
             sock.write(JSON.stringify(message));
             games[gameId] = null;
-            sock.gameId = i;
             sockets.push(sock);
             if(sockets.length == 2) {
                 start();
@@ -88,6 +93,7 @@ function setPosition(current, field, comb) {
     field[position1][position2] = current == 1 ? 0 : 'x';
 }
 function start() {
+    console.log('start');
     var socketsName = {
         0 : 'Cross',
         1 : 'Zero'
@@ -106,7 +112,9 @@ function start() {
     var field = [[' ', ' ', ' '],[' ', ' ', ' '],[' ', ' ', ' ']];
     var couple = sockets;
     sockets = [];
+
     games[i] = new Game(i, combinations, field, socketsName, couple);
+    console.log('gameId on start: ' + games[i].id);
     var message = {
         setting: 'choose position',
         id: games[i].id,
@@ -114,7 +122,7 @@ function start() {
         field: games[i].field
     };
     games[i].sockets[games[i].current].write(JSON.stringify(message));
-    i++;
+    ++i;
 }
 function messager(sockets, message) {
     for(var j = 0; j < sockets.length; j++){
