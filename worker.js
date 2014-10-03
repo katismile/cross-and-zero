@@ -10,22 +10,22 @@ var worker = async(function() {
     while(true) {
         var task = await(redis.brpop.bind(redis, 'tasks', 1000));
         var parsed = JSON.parse(task[1]);
-        taskHandler[parsed[0]](parsed[1]);
+        taskHandler[parsed.type](parsed.data);
     }
 });
 worker();
 
 var taskHandler = {
-    'start game': function(args) {
-        var sockets = args[0];
-        var gameId = args[1];
+    'start game': function(data) {
+        var sockets = data.sockets;
+        var gameId = data.i;
         start(games, gameId, sockets);
     },
-    'set position': function(args) {
-        var id = args[0];
+    'set position': function(data) {
+        var id = data.id;
         if(games[id] && games[id].combinations.length >= 0 && games[id].sockets.length === 2) {
-            var combination = args[1];
-            var combinations = args[2];
+            var combination = data.combination;
+            var combinations = data.combinations;
             games[id].combinations = combinations;
             setPosition(games[id].current, games[id].field, combination);
             if (checkWinner(games[id].field)) {
@@ -58,9 +58,9 @@ var taskHandler = {
             }
         }
     },
-    'disconnect': function(args) {
-        var gameId = args[0];
-        var socketId = args[1];
+    'disconnect': function(data) {
+        var gameId = data.gameId;
+        var socketId = data.socketId;
         if(games[gameId]){
             var stayedPlayer = socketId === games[gameId].sockets[0] ? games[gameId].sockets[1] : games[gameId].sockets[0];
             var message = {

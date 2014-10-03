@@ -18,7 +18,13 @@ var server = net.createServer(function(socket) {
     }
     if (sockets.length == 2) {
         (async(function() {
-            var message = ['start game', [sockets, i]];
+            var message = {
+                type : 'start game',
+                data : {
+                    sockets : sockets,
+                    i : i
+                }
+            };
             await(redis.lpush.bind(redis, 'tasks', JSON.stringify(message)));
             sockets = [];
             i++;
@@ -31,7 +37,14 @@ var server = net.createServer(function(socket) {
             var combination = JSON.parse(message)[1];
             var combinations = JSON.parse(message)[2];
             (async(function() {
-                var message = ['set position', [id, combination, combinations]];
+                var message = {
+                    type : 'set position',
+                    data : {
+                        id : id,
+                        combination : combination,
+                        combinations : combinations
+                    }
+                };
                 await(redis.lpush.bind(redis, 'tasks', JSON.stringify(message)));
             }))();
         }
@@ -46,11 +59,18 @@ var server = net.createServer(function(socket) {
         var gameId = socket.gameId;
         var socketId = socket.socketId;
         (async(function() {
-            var message = ['disconnect', [gameId, socketId]];
+            var message = {
+                type : 'disconnect',
+                data : {
+                    gameId : gameId,
+                    socketId : socketId
+                }
+            };
             await(redis.lpush.bind(redis, 'tasks', JSON.stringify(message)));
         }))();
     });
-}).listen(7777, function() {
+});
+server.listen(7777, function() {
     console.log('Server is running!');
 });
 
@@ -70,8 +90,14 @@ sub.on('message', function(channel, message) {
             socketsPool[sockId].gameId = i;
             sockets.push(sockId);
             if (sockets.length == 2) {
-                var newmessage = ['start game', [sockets, i]];
-                await(redis.lpush.bind(redis, 'tasks', JSON.stringify(newmessage)));
+                var newMessage = {
+                    type: 'start game',
+                    data: {
+                        sockets: sockets,
+                        i: i
+                    }
+                };
+                await(redis.lpush.bind(redis, 'tasks', JSON.stringify(newMessage)));
                 sockets = [];
                 i++;
             }
