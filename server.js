@@ -70,13 +70,10 @@ sub.on('message', function(channel, message) {
             socketsPool[sockId].gameId = i;
             sockets.push(sockId);
             if (sockets.length == 2) {
-                (async(function() {
-                    console.log(sockets, i);
-                    var message = ['start game', [sockets, i]];
-                    await(redis.lpush.bind(redis, 'tasks', JSON.stringify(message)));
-                    sockets = [];
-                    i++;
-                }))();
+                var newmessage = ['start game', [sockets, i]];
+                await(redis.lpush.bind(redis, 'tasks', JSON.stringify(newmessage)));
+                sockets = [];
+                i++;
             }
         }
     }
