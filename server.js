@@ -8,19 +8,31 @@ sub.subscribe('game');
 
 sub.on('message', function(channel, message) {
     var data = JSON.parse(message);
-    data.current =  data.current ? 0 : 1;
+
+    console.log(data);
+
 
     var socket = data.sockets[data.current];
 
-    if(data.action) {
-        redis.lpush('tasks', JSON.stringify(data));
-    }
 
+
+    if(data.action) {
+        if(data.action == 'finish') {
+            var socket1 = data.sockets[0];
+            var socket2 = data.sockets[1];
+
+            sockets[socket1].write(JSON.stringify(data));
+            sockets[socket2].write(JSON.stringify(data));
+        } else {
+            redis.lpush('tasks', JSON.stringify(data));
+        }
+    }
     if(sockets[socket]) {
         sockets[socket].write(JSON.stringify(data));
     }
-
 });
+
+
 
 var server = net.createServer(function(socket) {
     console.log('connect');
@@ -30,11 +42,17 @@ var server = net.createServer(function(socket) {
     pub.publish('sockets', id);
 
     socket.on('data', function(data){
-        console.log('fffff');
+        //console.log(data.toString());
+
         if(typeof JSON.parse(data.toString()) === 'string') {
             console.log(JSON.parse(data.toString()));
         }
+
+        if(typeof JSON.parse(data.toString()) === 'object') {
+            redis.lpush('tasks',data);
+        }
     });
+
 }).listen(7777, function() {
     console.log('Server is running!');
 });

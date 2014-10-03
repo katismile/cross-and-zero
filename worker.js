@@ -4,7 +4,6 @@ var redis = require('redis').createClient(),
     async = require('asyncawait/async'),
     await = require('asyncawait/await');
 
-var sockets = [];
 var data = {
   sockets: []
 };
@@ -12,12 +11,16 @@ var data = {
 sub.subscribe('sockets');
 
 sub.on('message', function(channel, message) {
-    console.log(message);
     data.sockets.push(message);
 
     if(data.sockets.length == 2) {
-        var str = JSON.stringify('start');
-        redis.lpush('tasks', str, function(err, res) {
+
+        var obj = {
+            action: 'start',
+            data: data
+        };
+
+        redis.lpush('tasks', JSON.stringify(obj), function(err, res) {
             if(err) throw err;
             console.log(res);
         });
@@ -25,24 +28,27 @@ sub.on('message', function(channel, message) {
 });
 
 var worker = async(function(){
-    var action;
+
     var task = await( redis.brpop.bind(redis, 'tasks', 5) );
 
     if(task) {
         task = task[1].trim();
 
         if(typeof JSON.parse(task) == 'object') {
-            action = JSON.parse(task).action;
+            task = JSON.parse(task);
+
+            var action = task.action,
+                data = task.data;
             console.log(action);
-            data = JSON.parse(task);
-        }
-        if(typeof JSON.parse(task) == 'string') {
-            action =  JSON.parse(task);
+            console.log(data);
         }
 
         if(typeof tik_tak_toe[action] === 'function') {
             tik_tak_toe[action](data);
-            data.sockets = [];
+
+            if(action == 'start') {
+                data.sockets = [];
+            }
         }
     }
 

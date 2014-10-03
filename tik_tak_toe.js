@@ -7,7 +7,7 @@ var TikTakToe = {
     sockets: [],
     games: [],
     i: 0,
-    start: function(data) {
+    start: function(options) {
         var socketsName = {
             0 : 'Cross',
             1: 'Zeroes'
@@ -24,28 +24,27 @@ var TikTakToe = {
             [2, 2]
         ];
         var field = [[],[],[]];
-        console.log(data.sockets);
+        console.log(options.sockets);
 
-        var couple = data.sockets;
+        var couple = options.sockets;
         console.log("Game " + this.i + " is started!");
         this.games[this.i] = new this.createGame(this.i, combinations, field, socketsName, couple);
 
         console.log(this.games[this.i]);
         pub.publish('game', JSON.stringify(this.games[this.i]));
 
-        //this.games[this.i].sockets[0].write(JSON.stringify(message));
         this.i++;
     },
-    setPosition: function(obj) {
-        console.log('fffffffff set position');
-        if(!obj.combination) {
+    setPosition: function(options) {
+
+        if(!options.combination) {
             return;
         }
-        var position1 = obj.combination[0],
-            position2 = obj.combination[1];
-        obj.field[position1][position2] =  obj.current;
+        var position1 = options.combination[0],
+            position2 = options.combination[1];
+        options.field[position1][position2] =  options.current;
 
-        this.setField(obj.field);
+        this.setField(options.field);
     },
     checkWinner: function(field) {
         if (field[0][0] !== undefined && field[1][0] !== undefined && field[2][0] !== undefined && field[0][0] == field[1][0] && field[1][0] == field[2][0]) {
@@ -82,88 +81,47 @@ var TikTakToe = {
         this.socketsName = socketsName;
         this.sockets = sockets
     },
-    check: function(message) {
-        console.log('moveeeeeeeeeeee');
-        console.log(message);
 
-        var id = message.id;
-
-        if(!message.combination) {
-            return;
-        }
+    check: function(options) {
+        var id = options.id;
+        var finishMessage;
 
         if( TikTakToe.games[id] &&  TikTakToe.games[id].combinations.length >=0){
-            var combination = message.combination;
-            TikTakToe.games[id].combinations = message.combinations;
+            var combination = options.combination;
+            TikTakToe.games[id].combinations = options.combinations;
             if(combination.length == 2){
                 TikTakToe.setPosition( TikTakToe.games[id].current,  TikTakToe.games[id].field, combination);
 
                 if(TikTakToe.checkWinner( TikTakToe.games[id].field)){
-                    for(var k = 0; k <  TikTakToe.games[id].sockets.length; k++){
-                        console.log('The winner is ' +  TikTakToe.games[id].socketsName[ TikTakToe.games[id].current]);
-                    }
-                }
-                if( !TikTakToe.checkWinner( TikTakToe.games[id].field) &&  TikTakToe.games[id].combinations.length == 0){
-                    for(var j = 0; j <  TikTakToe.games[id].sockets.length; j++){
-                        console.log('The game is finished, you both lost');
-                    }
+                    finishMessage = 'The winner is ' +  TikTakToe.games[id].socketsName[ TikTakToe.games[id].current];
+
+                    options.finish = 'finish';
+                    options.message =  finishMessage;
+
+                    pub.publish('game', JSON.stringify(options));
+
+                } else if (!TikTakToe.checkWinner( TikTakToe.games[id].field) &&  TikTakToe.games[id].combinations.length == 0){
+
+                    finishMessage = 'The game is finished, you both lost';
+
+                    options.finish = 'finish';
+                    options.message =  finishMessage;
+
+                    pub.publish('game', JSON.stringify(options));
+
+                } else {
+
+                    TikTakToe.games[id].current =  TikTakToe.games[id].current ? 0 : 1;
+
+                    options.current = TikTakToe.games[id].current;
+
+
+                    pub.publish('game', JSON.stringify(options));
                 }
             }
         }
     },
-    controller: function(message) {
 
-        if(typeof this[message.type] === 'function') {
-            this[message.type](message);
-        }
-    },
-    clientMove: function (message) {
-        console.log(message);
-        var gameId = message.gameId,
-            combinations = message.combinations,
-            field = message.field,
-            current = message.current,
-            self = this;
-
-        this.setField(field);
-
-        var choices = [];
-
-        for (var i = 0; i < combinations.length; i++) {
-            choices.push(JSON.stringify(combinations[i]));
-        }
-
-        inquirer.prompt([
-            {
-                type: "list",
-                name: "position",
-                message: "Please, choose position",
-                choices: choices
-            }
-        ], function (answer) {
-            var combination = answer.position;
-            field[JSON.parse(combination)[0]][JSON.parse(combination)[1]] = current;
-
-            self.setField(field);
-
-            for (var j = 0; j < combinations.length; j++) {
-                if (combinations[j] + "" == JSON.parse(combination)) {
-                    combinations.splice(j, 1);
-                }
-            }
-
-            var newMessage = {
-                type: "move",
-                gameId: gameId,
-                combination: JSON.parse(combination),
-                combinations: combinations,
-                field: field,
-                current: current
-            };
-            message.client.write(JSON.stringify(newMessage));
-        });
-
-    },
     setField: function (field) {
 
         var table = new Table({
