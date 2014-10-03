@@ -1,7 +1,8 @@
 var net = require('net'),
     argv = require('optimist').argv,
-    commands = require('./commands');
-
+    tik_tak_toe = require('./tik_tak_toe'),
+    pub = require('redis').createClient(),
+    redis = require('redis').createClient();
 
 if(argv.c) {
     for(var j = 0; j < argv.c; j++) {
@@ -25,9 +26,13 @@ function createSocket() {
     client.on('data', function(data) {
         if(typeof JSON.parse(data.toString()) === 'object') {
             obj = JSON.parse(data.toString());
-            obj.client = client;
+            setTimeout(function() {
+                obj.action = 'check';
+                pub.publish('game', JSON.stringify(obj));
 
-            move(obj);
+                move(obj);
+            }, 4000);
+
         }
         if(typeof JSON.parse(data.toString()) === 'string') {
             console.log(JSON.parse(data.toString()));
@@ -37,28 +42,25 @@ function createSocket() {
 
 function move(message) {
 
-    var gameId = message.gameId,
-        combinations = message.combinations,
+    var combinations = message.combinations,
         field = message.field,
         current  = message.current;
 
 
-    commands.setField(field);
+    tik_tak_toe.setField(field);
 
     var length = combinations.length,
         value = Math.floor(Math.random()*length),
         combination = combinations.splice(value, 1)[0];
     field[combination[0]][combination[1]] = current;
 
-    commands.setField(field);
+    tik_tak_toe.setField(field);
 
-    var newMessage = {
-        type: "move",
-        gameId: gameId,
-        combination: combination,
-        combinations: combinations,
-        field: field,
-        current: current
-    };
-    message.client.write(JSON.stringify(newMessage));
+    message['combination'] = combination;
+    message['combinations'] = combinations;
+    message['field'] = field;
+    message.action = 'setPosition';
+
+    console.log(JSON.stringify(message));
+    pub.publish('game', JSON.stringify(message) );
 }

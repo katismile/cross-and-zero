@@ -1,51 +1,40 @@
 var net = require('net'),
-    tik_tak_toe = require('./tik_tak_toe'),
-    i = 0;
+    redis = require('redis').createClient(),
+    pub = require('redis').createClient(),
+    sub = require('redis').createClient(),
+    sockets = {};
+
+sub.subscribe('game');
+
+sub.on('message', function(channel, message) {
+    var data = JSON.parse(message);
+    data.current =  data.current ? 0 : 1;
+
+    var socket = data.sockets[data.current];
+
+    if(data.action) {
+        redis.lpush('tasks', JSON.stringify(data));
+    }
+
+    if(sockets[socket]) {
+        sockets[socket].write(JSON.stringify(data));
+    }
+
+});
 
 var server = net.createServer(function(socket) {
     console.log('connect');
-    if ( tik_tak_toe.sockets.length < 2) {
-        socket.gameId = i;
-        tik_tak_toe.sockets.push(socket);
-    }
-    if (tik_tak_toe.sockets.length == 2) {
-        tik_tak_toe.start(i);
-        i++;
-    }
+    var id = Math.floor(Math.random()*1e5);
+
+    sockets[id] = socket;
+    pub.publish('sockets', id);
 
     socket.on('data', function(data){
+        console.log('fffff');
         if(typeof JSON.parse(data.toString()) === 'string') {
             console.log(JSON.parse(data.toString()));
         }
-        if(typeof JSON.parse(data.toString()) === 'object') {
-            var message = JSON.parse(data.toString());
-            console.log('message '+ message);
-            tik_tak_toe.controller(message);
-        }
     });
-    socket.on('end', function() {
-        gameId =  socket.gameId;
-        console.log('the end! game id ' +  gameId);
-
-        if(tik_tak_toe.sockets.indexOf(socket) != -1) {
-            var index = tik_tak_toe.sockets.indexOf(socket);
-            tik_tak_toe.sockets.splice(index, 1);
-        }
-
-        if(tik_tak_toe.games[gameId]) {
-            var newSocket = socket ==  tik_tak_toe.games[gameId].sockets[0] ?  tik_tak_toe.games[gameId].sockets[1] :  tik_tak_toe.games[gameId].sockets[0];
-            newSocket.gameId = i;
-            newSocket.write(JSON.stringify('Game is over. Your opponent is disconnected. Please, wait another opponent.'));
-            tik_tak_toe.games[gameId] = null;
-            tik_tak_toe.sockets.push(newSocket);
-
-            if( tik_tak_toe.sockets.length == 2) {
-                tik_tak_toe.start(i);
-                i++;
-            }
-        }
-    });
-
 }).listen(7777, function() {
     console.log('Server is running!');
 });
