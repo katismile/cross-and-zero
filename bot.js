@@ -11,7 +11,7 @@ else {
     createSocket();
 }
 function createSocket() {
-    var client = new net.Socket({
+    var client = new net.Socket( {
         writable: true
     });
     client.connect(7777, function() {
@@ -20,13 +20,13 @@ function createSocket() {
     client.on('data', function(data) {
         var message = data.toString();
         var requestHandler = {
-            'finish message': function(){
+            'finish message': function() {
                 controller.finishMessage(message);
             },
-            'choose position': function(){
+            'choose position': function() {
                 controller.choosePositionBot(message, client)
             },
-            'opponent exit': function(){
+            'opponent exit': function() {
                 controller.disconnect(message)
             }
         };

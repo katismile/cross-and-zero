@@ -42,9 +42,10 @@ var server = net.createServer(function(socket) {
             var index = sockets.indexOf(socket);
             sockets.splice(index, 1);
         }
+        delete socketsPool[socket.socketId];
         var gameId = socket.gameId;
         var socketId = socket.socketId;
-        (async(function(){
+        (async(function() {
             var message = ['disconnect', [gameId, socketId]];
             await(redis.lpush.bind(redis, 'tasks', JSON.stringify(message)));
         }))();
@@ -55,25 +56,28 @@ var server = net.createServer(function(socket) {
 
 sub.subscribe('sockets commands');
 sub.subscribe('to stayed user');
-sub.on('message', function(channel, message){
-    if(channel == 'sockets commands'){
+sub.on('message', function(channel, message) {
+    if (channel == 'sockets commands') {
         var socketId = JSON.parse(message)[0];
         var messageToSocket = JSON.parse(message)[1];
-        console.log('all: '+Object.keys(socketsPool),'id: '+ socketId);
-        socketsPool[socketId].write(JSON.stringify(messageToSocket));
+        if (socketsPool[socketId]){
+            socketsPool[socketId].write(JSON.stringify(messageToSocket));
+        }
     }
-    else if(channel == 'to stayed user'){
+    else if (channel == 'to stayed user') {
         var sockId = JSON.parse(message).socketId;
-        socketsPool[sockId].gameId = i;
-        sockets.push(sockId);
-        if(sockets.length == 2){
-            (async(function() {
-                console.log(sockets, i);
-                var message = ['start game', [sockets, i]];
-                await(redis.lpush.bind(redis, 'tasks', JSON.stringify(message)));
-                sockets = [];
-                i++;
-            }))();
+        if (socketsPool[sockId]){
+            socketsPool[sockId].gameId = i;
+            sockets.push(sockId);
+            if (sockets.length == 2) {
+                (async(function() {
+                    console.log(sockets, i);
+                    var message = ['start game', [sockets, i]];
+                    await(redis.lpush.bind(redis, 'tasks', JSON.stringify(message)));
+                    sockets = [];
+                    i++;
+                }))();
+            }
         }
     }
 

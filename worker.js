@@ -10,7 +10,6 @@ var worker = async(function() {
     while(true) {
         var task = await(redis.brpop.bind(redis, 'tasks', 1000));
         var parsed = JSON.parse(task[1]);
-        //console.log(parsed);
         taskHandler[parsed[0]](parsed[1]);
     }
 });
@@ -24,10 +23,9 @@ var taskHandler = {
     },
     'set position': function(args) {
         var id = args[0];
-        if(games[id] && games[id].combinations.length >= 0) {
+        if(games[id] && games[id].combinations.length >= 0 && games[id].sockets.length === 2) {
             var combination = args[1];
             var combinations = args[2];
-            console.log('set position');
             games[id].combinations = combinations;
             setPosition(games[id].current, games[id].field, combination);
             if (checkWinner(games[id].field)) {
@@ -60,7 +58,7 @@ var taskHandler = {
             }
         }
     },
-    'disconnect': function(args){
+    'disconnect': function(args) {
         var gameId = args[0];
         var socketId = args[1];
         if(games[gameId]){
@@ -73,6 +71,7 @@ var taskHandler = {
                 message: 'You opponent has left, please wait for another player'
             };
             games[gameId] = null;
+
             redis.publish(stayed, JSON.stringify(message));
             redis.publish(channel, JSON.stringify([stayedPlayer,messageForClient]));
         }
@@ -80,7 +79,6 @@ var taskHandler = {
 };
 
 function start(games, i, sockets) {
-    console.log('start');
     var socketsName = {
         0: 'Cross',
         1: 'Zero'
