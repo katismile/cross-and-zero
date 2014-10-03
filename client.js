@@ -21,7 +21,7 @@ function createSocket() {
         var message = data.toString();
         var requestHandler = {
             'finish message': function() {
-                controller.finishMessage(message);
+                controller.finishMessage(message, client);
             },
             'choose position': function() {
                 controller.choosePositionClient(message, client)

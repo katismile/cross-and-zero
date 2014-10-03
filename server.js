@@ -24,7 +24,7 @@ var server = net.createServer(function(socket) {
                     sockets : sockets,
                     i : i
                 }
-            };
+            }
             await(redis.lpush.bind(redis, 'tasks', JSON.stringify(message)));
             sockets = [];
             i++;
@@ -69,8 +69,7 @@ var server = net.createServer(function(socket) {
             await(redis.lpush.bind(redis, 'tasks', JSON.stringify(message)));
         }))();
     });
-});
-server.listen(7777, function() {
+}).listen(7777, function() {
     console.log('Server is running!');
 });
 
@@ -97,7 +96,7 @@ sub.on('message', function(channel, message) {
                         i: i
                     }
                 };
-                await(redis.lpush.bind(redis, 'tasks', JSON.stringify(newMessage)));
+                redis.lpush.bind(redis, 'tasks', JSON.stringify(newMessage));
                 sockets = [];
                 i++;
             }
