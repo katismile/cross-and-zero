@@ -23,16 +23,14 @@ function createSocket() {
     });
 
     client.on('data', function(data) {
+
         if(typeof JSON.parse(data.toString()) === 'object') {
             obj = JSON.parse(data.toString());
 
-            if(obj.message) {
-                client.write(JSON.stringify(obj.message));
-            } else {
-                setTimeout(function() {
-                    move(client, obj);
-                }, 4000);
-            }
+            setTimeout(function() {
+                move(client, obj);
+            }, 4000);
+
         }
         if(typeof JSON.parse(data.toString()) === 'string') {
             console.log(JSON.parse(data.toString()));
@@ -66,7 +64,4 @@ function move(client, message) {
     };
     console.log(obj);
     client.write(JSON.stringify(obj));
-
-    //
-    //pub.publish('game', JSON.stringify(message) );
 }

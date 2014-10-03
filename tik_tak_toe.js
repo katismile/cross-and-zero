@@ -24,27 +24,22 @@ var TikTakToe = {
             [2, 2]
         ];
         var field = [[],[],[]];
-        console.log(options.sockets);
 
         var couple = options.sockets;
         console.log("Game " + this.i + " is started!");
         this.games[this.i] = new this.createGame(this.i, combinations, field, socketsName, couple);
 
-        console.log(this.games[this.i]);
         pub.publish('game', JSON.stringify(this.games[this.i]));
 
         this.i++;
     },
-    setPosition: function(options) {
+    setPosition: function(current, field, combination) {
 
-        if(!options.combination) {
-            return;
-        }
-        var position1 = options.combination[0],
-            position2 = options.combination[1];
-        options.field[position1][position2] =  options.current;
+        var position1 = combination[0],
+            position2 = combination[1];
+        field[position1][position2] =  current;
 
-        this.setField(options.field);
+        this.setField(field);
     },
     checkWinner: function(field) {
         if (field[0][0] !== undefined && field[1][0] !== undefined && field[2][0] !== undefined && field[0][0] == field[1][0] && field[1][0] == field[2][0]) {
@@ -84,40 +79,28 @@ var TikTakToe = {
 
     check: function(options) {
         var id = options.id;
-        var finishMessage;
+        var combination = options.combination;
 
-        if( TikTakToe.games[id] &&  TikTakToe.games[id].combinations.length >=0){
-            var combination = options.combination;
+        if( combination.length == 2 &&  TikTakToe.games[id].combinations.length >=0){
             TikTakToe.games[id].combinations = options.combinations;
-            if(combination.length == 2){
-                TikTakToe.setPosition( TikTakToe.games[id].current,  TikTakToe.games[id].field, combination);
+            TikTakToe.setPosition( TikTakToe.games[id].current,  TikTakToe.games[id].field, combination);
 
-                if(TikTakToe.checkWinner( TikTakToe.games[id].field)){
-                    finishMessage = 'The winner is ' +  TikTakToe.games[id].socketsName[ TikTakToe.games[id].current];
+            if(TikTakToe.checkWinner( TikTakToe.games[id].field)){
+                options.message = 'The winner is ' +  TikTakToe.games[id].socketsName[ TikTakToe.games[id].current];
 
-                    options.finish = 'finish';
-                    options.message =  finishMessage;
+                pub.publish('finish', JSON.stringify(options));
 
-                    pub.publish('game', JSON.stringify(options));
+            } else if (!TikTakToe.checkWinner( TikTakToe.games[id].field) &&  TikTakToe.games[id].combinations.length == 0){
+                options.message = 'The game is finished, you both lost';
 
-                } else if (!TikTakToe.checkWinner( TikTakToe.games[id].field) &&  TikTakToe.games[id].combinations.length == 0){
+                pub.publish('finish', JSON.stringify(options));
 
-                    finishMessage = 'The game is finished, you both lost';
+            } else {
 
-                    options.finish = 'finish';
-                    options.message =  finishMessage;
+                TikTakToe.games[id].current =  TikTakToe.games[id].current ? 0 : 1;
+                options.current = TikTakToe.games[id].current;
 
-                    pub.publish('game', JSON.stringify(options));
-
-                } else {
-
-                    TikTakToe.games[id].current =  TikTakToe.games[id].current ? 0 : 1;
-
-                    options.current = TikTakToe.games[id].current;
-
-
-                    pub.publish('game', JSON.stringify(options));
-                }
+                pub.publish('game', JSON.stringify(options));
             }
         }
     },
