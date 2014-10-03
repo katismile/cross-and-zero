@@ -4,6 +4,8 @@
     "dependencies": {
         "optimist" : "latest",
         "cli-table" : "latest",
-        "inquirer" : "latest"
+        "inquirer" : "latest",
+        "redis": "latest",
+        "asyncawait": "latest"
     }
 }
