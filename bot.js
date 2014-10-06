@@ -34,6 +34,10 @@ function createSocket() {
         }
         if(typeof JSON.parse(data.toString()) === 'string') {
             console.log(JSON.parse(data.toString()));
+
+            if(JSON.parse(data.toString()).toLowerCase() == 'ping') {
+                client.write(JSON.stringify('ok'));
+            }
         }
     });
 }
@@ -59,7 +63,7 @@ function move(client, message) {
     message['field'] = field;
 
     var obj = {
-        action: 'check',
+        action: "check",
         data: message
     };
     console.log(obj);

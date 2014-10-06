@@ -6,8 +6,8 @@ var redis = require('redis').createClient(),
 var TikTakToe = {
     sockets: [],
     games: [],
-    i: 0,
     start: function(options) {
+        console.log(options);
         var socketsName = {
             0 : 'Cross',
             1: 'Zeroes'
@@ -26,12 +26,10 @@ var TikTakToe = {
         var field = [[],[],[]];
 
         var couple = options.sockets;
-        console.log("Game " + this.i + " is started!");
-        this.games[this.i] = new this.createGame(this.i, combinations, field, socketsName, couple);
+        console.log("Game " + options.gameId + " is started!");
+        this.games[options.gameId] = new this.createGame(options.gameId, combinations, field, socketsName, couple);
 
-        pub.publish('game', JSON.stringify(this.games[this.i]));
-
-        this.i++;
+        pub.publish('game', JSON.stringify(this.games[options.gameId]));
     },
     setPosition: function(current, field, combination) {
 
@@ -135,6 +133,10 @@ var TikTakToe = {
             , array[2]
         );
         console.log(table.toString());
+    },
+    disconnect: function(options) {
+        gameId = options.gameId;
+
     }
 
 };
