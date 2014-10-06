@@ -7,6 +7,7 @@ var async = require('asyncawait/async');
 var await = require('asyncawait/await');
 var i = 0;
 var socketId = 0;
+var pings = [];
 
 var server = net.createServer(function(socket) {
     if (sockets.length < 2) {
@@ -17,22 +18,23 @@ var server = net.createServer(function(socket) {
         socketId++;
     }
     if (sockets.length == 2) {
-        (async(function() {
-            var message = {
-                type : 'start game',
-                data : {
-                    sockets : sockets,
-                    i : i
-                }
-            }
-            await(redis.lpush.bind(redis, 'tasks', JSON.stringify(message)));
-            sockets = [];
-            i++;
-        }))();
+        console.log('start');
+        start(socket);
     }
     socket.on('data', function(data) {
         var message = data.toString();
-        if (message.indexOf('[') !== -1) {
+        if (message === 'ping') {
+            pings.push(socket);
+            console.log(message);
+        }
+        else if(message === 'new game'){
+            sockets.push(socket.socketId);
+            if (sockets.length == 2) {
+                console.log('start');
+                start(socket);
+            }
+        }
+        else if (message.indexOf('[') !== -1) {
             var id = JSON.parse(message)[0];
             var combination = JSON.parse(message)[1];
             var combinations = JSON.parse(message)[2];
@@ -105,4 +107,25 @@ sub.on('message', function(channel, message) {
 
 });
 
+function start(socket){
+    socketsPool[sockets[0]].write(JSON.stringify({setting: 'ping'}));
+    socketsPool[sockets[1]].write(JSON.stringify({setting: 'ping'}));
 
+    socket.setTimeout(5000, function(){
+        if(pings.length == 2){
+            (async(function() {
+                var message = {
+                    type : 'start game',
+                    data : {
+                        sockets : sockets,
+                        i : i
+                    }
+                };
+                await(redis.lpush.bind(redis, 'tasks', JSON.stringify(message)));
+                sockets = [];
+                i++;
+            }))();
+            pings = [];
+        }
+    })
+}

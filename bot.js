@@ -28,6 +28,9 @@ function createSocket() {
             },
             'opponent exit': function() {
                 controller.disconnect(message)
+            },
+            'ping' : function(){
+                controller.ping(message, client)
             }
         };
         var parsed = JSON.parse(message);

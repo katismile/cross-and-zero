@@ -6,7 +6,7 @@ exports.finishMessage = function(message, client) {
     var winnerMessage = JSON.parse(message);
     console.log(drawTable(winnerMessage.field));
     console.log(winnerMessage.message);
-    client.end();
+    client.write('new game');
 };
 exports.choosePositionClient = function(message, client) {
     var parseMessage = JSON.parse(message);
@@ -25,4 +25,8 @@ exports.choosePositionBot = function(message, client) {
 exports.disconnect = function(message) {
     var parseMessage = JSON.parse(message);
     console.log(parseMessage.message);
+};
+
+exports.ping = function(message, client){
+    client.write('ping');
 };
