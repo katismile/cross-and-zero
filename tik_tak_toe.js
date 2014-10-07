@@ -1,29 +1,44 @@
-var redis = require('redis').createClient(),
-    pub = require('redis').createClient(),
-    Table = require('cli-table'),
-    inquirer = require('inquirer');
+var pub = require('redis').createClient(),
+    Table = require('cli-table');
 
 var TikTakToe = {
     sockets: [],
     games: [],
     start: function(options) {
-        console.log(options);
+
         var socketsName = {
             0 : 'Cross',
-            1: 'Zeroes'
+            1: 'Zeroes',
+            2: 'YYYYYY'
         };
         var combinations = [
             [0, 0],
             [0, 1],
             [0, 2],
+            [0, 3],
+            [0, 4],
             [1, 0],
             [1, 1],
             [1, 2],
+            [1, 3],
+            [1, 4],
             [2, 0],
             [2, 1],
-            [2, 2]
+            [2, 2],
+            [2, 3],
+            [2, 4],
+            [3, 0],
+            [3, 1],
+            [3, 2],
+            [3, 3],
+            [3, 4],
+            [4, 0],
+            [4, 1],
+            [4, 2],
+            [4, 3],
+            [4, 4]
         ];
-        var field = [[],[],[]];
+        var field = [[],[],[],[],[]];
 
         var couple = options.sockets;
         console.log("Game " + options.gameId + " is started!");
@@ -40,25 +55,31 @@ var TikTakToe = {
         this.setField(field);
     },
     checkWinner: function(field) {
-        if (field[0][0] !== undefined && field[1][0] !== undefined && field[2][0] !== undefined && field[0][0] == field[1][0] && field[1][0] == field[2][0]) {
+        if (field[0][0] !== undefined && field[1][0] !== undefined && field[2][0] !== undefined && field[3][0] !== undefined && field[4][0] !== undefined && field[0][0] == field[1][0] && field[1][0] == field[2][0] && field[2][0] == field[3][0] && field[3][0] == field[4][0]) {
             return true;
         }
-        if (field[0][1] !== undefined && field[1][1] !== undefined && field[2][1] !== undefined && field[0][1] == field[1][1] && field[1][1] == field[2][1]) {
+        if (field[0][1] !== undefined && field[1][1] !== undefined && field[2][1] !== undefined && field[3][1] !== undefined && field[4][1] !== undefined && field[0][1] == field[1][1] && field[1][1] == field[2][1] && field[2][1] == field[3][1] && field[3][1] == field[4][1]) {
             return true;
         }
-        if (field[0][2] !== undefined && field[1][2] !== undefined && field[2][2] !== undefined && field[0][2] == field[1][2] && field[1][2] == field[2][2]) {
+        if (field[0][2] !== undefined && field[1][2] !== undefined && field[2][2] !== undefined && field[3][2] !== undefined && field[4][2] !== undefined && field[0][2] == field[1][2] && field[1][2] == field[2][2] && field[2][2] == field[3][2] && field[3][2] == field[4][2]) {
             return true;
         }
-        if (field[0][0] !== undefined && field[1][1] !== undefined && field[2][2] !== undefined && field[0][0] == field[1][1] && field[1][1] == field[2][2]) {
+        if (field[0][3] !== undefined && field[1][3] !== undefined && field[2][3] !== undefined && field[3][3] !== undefined && field[4][3] !== undefined && field[0][3] == field[1][3] && field[1][3] == field[2][3] && field[2][3] == field[3][3] && field[3][3] == field[4][3]) {
             return true;
         }
-        if (field[0][2] !== undefined && field[1][1] !== undefined && field[2][0] !== undefined && field[0][2] == field[1][1] && field[1][1] == field[2][0]) {
+        if (field[0][4] !== undefined && field[1][4] !== undefined && field[2][4] !== undefined && field[3][4] !== undefined && field[4][4] !== undefined && field[0][4] == field[1][4] && field[1][4] == field[2][4] && field[2][4] == field[3][4] && field[3][4] == field[4][4]) {
+            return true;
+        }
+        if (field[0][0] !== undefined && field[1][1] !== undefined && field[2][2] !== undefined && field[3][3] !== undefined && field[4][4] !== undefined && field[0][0] == field[1][1] && field[1][1] == field[2][2] && field[2][2] == field[3][3] && field[3][3] == field[4][4]) {
+            return true;
+        }
+        if (field[0][4] !== undefined && field[1][3] !== undefined && field[2][2] !== undefined && field[3][1] !== undefined && field[4][0] !== undefined && field[0][4] == field[1][3] && field[1][3] == field[2][2] && field[2][2] == field[3][1] && field[3][1] == field[4][0]) {
             return true;
         }
         else {
             for(var i = 0; i < field.length; i ++) {
                 for (var j = 0; j < field[i].length; j++) {
-                    if(field[i][j] === field[i][j + 1] && field[i][j + 1] == field[i][j + 2]) {
+                    if(field[i][j] === field[i][j + 1] && field[i][j + 1] == field[i][j + 2] && field[i][j + 2] == field[i][j + 3] && field[i][j + 3] == field[i][j + 4]) {
                         return true;
                     }
                 }
@@ -79,26 +100,31 @@ var TikTakToe = {
         var id = options.id;
         var combination = options.combination;
 
-        if( combination.length == 2 &&  TikTakToe.games[id].combinations.length >=0){
-            TikTakToe.games[id].combinations = options.combinations;
-            TikTakToe.setPosition( TikTakToe.games[id].current,  TikTakToe.games[id].field, combination);
+        if(TikTakToe.games[id]) {
+            if( combination.length == 2 &&  TikTakToe.games[id].combinations.length >=0){
+                TikTakToe.games[id].combinations = options.combinations;
+                TikTakToe.setPosition( TikTakToe.games[id].current,  TikTakToe.games[id].field, combination);
 
-            if(TikTakToe.checkWinner( TikTakToe.games[id].field)){
-                options.message = 'The winner is ' +  TikTakToe.games[id].socketsName[ TikTakToe.games[id].current];
+                if(TikTakToe.checkWinner( TikTakToe.games[id].field)){
+                    options.message = 'The winner is ' +  TikTakToe.games[id].socketsName[ TikTakToe.games[id].current];
 
-                pub.publish('finish', JSON.stringify(options));
+                    pub.publish('finish', JSON.stringify(options));
 
-            } else if (!TikTakToe.checkWinner( TikTakToe.games[id].field) &&  TikTakToe.games[id].combinations.length == 0){
-                options.message = 'The game is finished, you both lost';
+                } else if (!TikTakToe.checkWinner( TikTakToe.games[id].field) &&  TikTakToe.games[id].combinations.length == 0){
+                    options.message = 'The game is finished, you both lost';
 
-                pub.publish('finish', JSON.stringify(options));
+                    pub.publish('finish', JSON.stringify(options));
 
-            } else {
+                } else {
 
-                TikTakToe.games[id].current =  TikTakToe.games[id].current ? 0 : 1;
-                options.current = TikTakToe.games[id].current;
+                    TikTakToe.games[id].current++;
+                    if(TikTakToe.games[id].current > 2) {
+                        TikTakToe.games[id].current = 0;
+                    }
+                    options.current = TikTakToe.games[id].current;
 
-                pub.publish('game', JSON.stringify(options));
+                    pub.publish('game', JSON.stringify(options));
+                }
             }
         }
     },
@@ -113,13 +139,16 @@ var TikTakToe = {
 
         for (var i = 0; i < field.length; i++) {
             var newArr = [];
-            for (var j = 0; j < 3; j++) {
+            for (var j = 0; j < 5; j++) {
                 if (field[i][j] != undefined) {
                     if (field[i][j] == 0) {
                         newArr.push('X');
                     }
                     if (field[i][j] == 1) {
                         newArr.push('O');
+                    }
+                    if (field[i][j] == 2) {
+                        newArr.push('Y');
                     }
                 } else {
                     newArr.push('');
@@ -131,13 +160,30 @@ var TikTakToe = {
             array[0]
             , array[1]
             , array[2]
+            , array[3]
+            , array[4]
         );
         console.log(table.toString());
     },
     disconnect: function(options) {
-        gameId = options.gameId;
+        var gameId = options.gameId,
+            socketId = options.socketId,
+            data = {};
 
+        if(this.games[gameId]) {
+            if(this.games[gameId].sockets.indexOf(socketId)) {
+                var index = this.games[gameId].sockets.indexOf(socketId);
+                this.games[gameId].sockets.splice(index, 1);
+
+                data.sockets = this.games[gameId].sockets;
+
+                pub.publish('restart', JSON.stringify(data));
+            }
+            this.games[gameId] = null;
+        } else {
+            data.socket = socketId;
+            pub.publish('delete', JSON.stringify(data));
+        }
     }
-
 };
 module.exports = TikTakToe;

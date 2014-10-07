@@ -1,7 +1,6 @@
 var net = require('net'),
     argv = require('optimist').argv,
-    tik_tak_toe = require('./tik_tak_toe'),
-    pub = require('redis').createClient();
+    tik_tak_toe = require('./tik_tak_toe');
 
 if(argv.c) {
     for(var j = 0; j < argv.c; j++) {
@@ -29,14 +28,14 @@ function createSocket() {
 
             setTimeout(function() {
                 move(client, obj);
-            }, 4000);
+            }, 500);
 
         }
         if(typeof JSON.parse(data.toString()) === 'string') {
             console.log(JSON.parse(data.toString()));
 
-            if(JSON.parse(data.toString()).toLowerCase() == 'ping') {
-                client.write(JSON.stringify('ok'));
+            if(JSON.parse(data.toString()).toLowerCase().indexOf('ping') != -1) {
+                client.write(JSON.stringify('OK'));
             }
         }
     });
@@ -66,6 +65,5 @@ function move(client, message) {
         action: "check",
         data: message
     };
-    console.log(obj);
     client.write(JSON.stringify(obj));
 }
