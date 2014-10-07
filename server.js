@@ -6,8 +6,9 @@ var sub = require('redis').createClient();
 var i = 0;
 var socketId = 0;
 var pings = [];
-
+var timeSocket;
 var server = net.createServer(function(socket) {
+    timeSocket = socket;
     if (sockets.length < 3) {
         socket.gameId = i;
         socket.socketId = socketId;
@@ -21,6 +22,7 @@ var server = net.createServer(function(socket) {
     socket.on('data', function(data) {
         var message = data.toString();
         if (message === 'ping') {
+            console.log('ping');
             pings.push(socket);
         }
         else if(message === 'new game'){
@@ -84,16 +86,7 @@ sub.on('message', function(channel, message) {
                 socketsPool[sockIds[i]].gameId = i;
                 sockets.push(sockIds[i]);
                 if (sockets.length > 1) {
-                    var newMessage = {
-                        type: 'start game',
-                        data: {
-                            sockets: sockets,
-                            i: i
-                        }
-                    };
-                    redis.lpush('tasks', JSON.stringify(newMessage));
-                    sockets = [];
-                    i++;
+                    start(timeSocket)
                 }
             }
         }
