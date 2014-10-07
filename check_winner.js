@@ -1,27 +1,33 @@
-module.exports = function (field) {
-    if (field[0][0] !== ' ' && field[1][0] !== ' ' && field[2][0] !== ' ' && field[0][0] == field[1][0] && field[1][0] == field[2][0]) {
-        return true;
-    }
-    if (field[0][1] !== ' ' && field[1][1] !== ' ' && field[2][1] !== ' ' && field[0][1] == field[1][1] && field[1][1] == field[2][1]) {
-        return true;
-    }
-    if (field[0][2] !== ' ' && field[1][2] !== ' ' && field[2][2] !== ' ' && field[0][2] == field[1][2] && field[1][2] == field[2][2]) {
-        return true;
-    }
-    if (field[0][0] !== ' ' && field[1][1] !== ' ' && field[2][2] !== ' ' && field[0][0] == field[1][1] && field[1][1] == field[2][2]) {
-        return true;
-    }
-    if (field[0][2] !== ' ' && field[1][1] !== ' ' && field[2][0] !== ' ' && field[0][2] == field[1][1] && field[1][1] == field[2][0]) {
-        return true;
-    }
-    else {
-        for(var i = 0; i < field.length; i ++) {
-            for (var j = 0; j < field[i].length; j++) {
-                if(field[i][j] === field[i][j + 1] && field[i][j + 1] == field[i][j + 2] && field[i][j] !== ' ' && field[i][j + 1] !== ' ' && field[i][j + 2] !== ' ') {
-                    return true;
-                }
-            }
+module.exports = function check(field) {
+    for (var i = 0; i < field.length; ) {
+        var first = field[i][i];
+        var innerLength = field[0].length;
+        var j = 0;
+        var rowFlag = true;
+        var colFlag = true;
+        while(j < innerLength){
+            rowFlag = rowFlag && first == field[i][j] && field[i][j] !== ' ' && first !== ' ';
+            colFlag = colFlag && first == field[j][i] && field[j][i] !== ' ' && first !== ' ';;
+            j++;
         }
+        if(rowFlag || colFlag){
+            return true;
+        }
+        i++;
     }
-    return false;
+    var diagonal1 = true;
+    var diagonal2 = true;
+    for(var k = 0; k < field.length; ){
+        var firsts = field[0][0];
+        diagonal1 = diagonal1 && firsts == field[k][k] && field[k][k] !== ' ' && firsts !== ' ';
+        k++;
+    }
+    var len = field.length - 1;
+    for(var l = 0; l < field.length; ) {
+        var f = field[field.length - 1][0];
+        diagonal2 = diagonal2 && f == field[len][l] && field[len][l] !==' ' && f !== ' ';
+        len--;
+        l++
+    }
+    return diagonal1 || diagonal2;
 };

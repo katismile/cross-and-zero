@@ -5,6 +5,8 @@ module.exports = function(array) {
         , 'left': '║' , 'left-mid': '╟' , 'mid': '─' , 'mid-mid': '┼'
         , 'right': '║' , 'right-mid': '╢' , 'middle': '│' };
     var table = new Table ({ chars: chars });
-    table.push(array[0], array[1], array[2]);
+    for( var i = 0; i < array.length; i++){
+        table.push(array[i]);
+    }
     return table.toString();
 };

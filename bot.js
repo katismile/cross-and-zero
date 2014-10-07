@@ -29,7 +29,7 @@ function createSocket() {
             'opponent exit': function() {
                 controller.disconnect(message)
             },
-            'ping' : function(){
+            'ping': function(){
                 controller.ping(message, client)
             }
         };
