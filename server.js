@@ -1,6 +1,7 @@
 var net = require('net'),
     redis = require('redis').createClient(),
     sub = require('redis').createClient(),
+    inquirer = require('inquirer'),
     sockets = {},
     store = {},
     gameId = 0,
@@ -19,19 +20,20 @@ var server = net.createServer(function(socket) {
     if(store.sockets.length < 3) {
         store.sockets.push(id);
     }
-
     console.log('begin sockets ' + store.sockets.length + ' ' + store.sockets);
 
-    if(store.sockets.length == 3) {
+    if(store.sockets.length == 2) {
         store.gameId = gameId;
 
-        start(function(err, res) {
-            if(err) throw err;
+        setTimeout(function() {
+            start(function(err, res) {
+                if(err) throw err;
 
-            store.sockets = [];
-            checkPing = [];
-            gameId++;
-        });
+                store.sockets = [];
+                checkPing = [];
+                gameId++;
+            });
+        }, 10000);
     }
 
     socket.on('data', function(data){
