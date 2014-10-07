@@ -6,9 +6,8 @@ var sub = require('redis').createClient();
 var i = 0;
 var socketId = 0;
 var pings = [];
-var timeSocket;
+var socketsLength;
 var server = net.createServer(function(socket) {
-    timeSocket = socket;
     if (sockets.length < 3) {
         socket.gameId = i;
         socket.socketId = socketId;
@@ -27,9 +26,9 @@ var server = net.createServer(function(socket) {
         }
         else if(message === 'new game'){
             sockets.push(socket.socketId);
-            if (sockets.length > 1) {
-                console.log('start');
-                start(socket);
+            console.log(sockets);
+            if (sockets.length === socketsLength) {
+                start();
             }
         }
         else if (message.indexOf('[') !== -1) {
@@ -86,19 +85,20 @@ sub.on('message', function(channel, message) {
                 socketsPool[sockIds[i]].gameId = i;
                 sockets.push(sockIds[i]);
                 if (sockets.length > 1) {
-                    start(timeSocket)
+                    start()
                 }
             }
         }
     }
 });
 
-function start(socket){
-    console.log('start');
+function start(){
+    socketsLength = sockets.length;
     for(var j = 0; j < sockets.length; j ++){
         socketsPool[sockets[j]].write(JSON.stringify({setting: 'ping'}));
     }
-    socket.setTimeout(5000, function(){
+    setTimeout(function(){
+        console.log('start');
         if(pings.length == 3 || pings.length == 2){
             var message = {
                 type : 'start game',
@@ -112,5 +112,5 @@ function start(socket){
             i++;
             pings = [];
         }
-    })
+    }, 5000)
 }

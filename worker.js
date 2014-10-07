@@ -17,6 +17,7 @@ worker();
 
 var taskHandler = {
     'start game': function(data) {
+        console.log(data);
         var sockets = data.sockets;
         var gameId = data.i;
         start(games, gameId, sockets);
