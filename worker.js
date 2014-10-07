@@ -92,41 +92,22 @@ var taskHandler = {
 };
 
 function start(games, i, sockets) {
-    console.log("start");
+    var combinations = [];
+    var field = [];
+    var counter = sockets.length === 2 ? 3 : 5;
+    for(var j = 0; j < counter; j++){
+        field.push([]);
+        for(var k = 0; k < counter; k++){
+            combinations.push([j, k]);
+            field[j].push(' ');
+        }
+    }
     var socketsName = {
         0: 'x',
         1: '0',
         2: 'y'
     };
-    var combinations = [
-        [0, 0],
-        [0, 1],
-        [0, 2],
-        [0, 3],
-        [0, 4],
-        [1, 0],
-        [1, 1],
-        [1, 2],
-        [1, 3],
-        [1, 4],
-        [2, 0],
-        [2, 1],
-        [2, 2],
-        [2, 3],
-        [2, 4],
-        [3, 0],
-        [3, 1],
-        [3, 2],
-        [3, 3],
-        [3, 4],
-        [4, 0],
-        [4, 1],
-        [4, 2],
-        [4, 3],
-        [4, 4]
-    ];
-    var field = [[' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ']];
-
+    console.log("start");
     games[i] = new Game(i, combinations, field, socketsName, sockets);
     var message = {
         setting: 'choose position',

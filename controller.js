@@ -30,3 +30,18 @@ exports.disconnect = function(message) {
 exports.ping = function(message, client){
     client.write('ping');
 };
+exports.chooseSuit = function(message, client){
+    console.log(JSON.parse(message));
+    var parsed = JSON.parse(message);
+    var comb = parsed.data.suits;
+    var value = Math.floor(Math.random()*comb.length);
+    var combination = comb.splice(value, 1)[0];
+    var suitMessage = {
+        setting: 'choose suit',
+        data: {
+            suits: comb,
+            suit: combination
+        }
+    };
+    client.write(JSON.stringify(suitMessage))
+};

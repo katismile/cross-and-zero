@@ -31,6 +31,9 @@ function createSocket() {
             },
             'ping': function(){
                 controller.ping(message, client)
+            },
+            'choose suit': function(){
+                controller.chooseSuit(message, client);
             }
         };
         var parsed = JSON.parse(message);

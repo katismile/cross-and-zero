@@ -15,8 +15,8 @@ var server = net.createServer(function(socket) {
         sockets.push(socketId);
         socketId++;
     }
-    if (sockets.length === 3) {
-        start(socket);
+    if (sockets.length == 2) {
+        setTimeout(start, 30000);
     }
     socket.on('data', function(data) {
         var message = data.toString();
@@ -26,7 +26,6 @@ var server = net.createServer(function(socket) {
         }
         else if(message === 'new game'){
             sockets.push(socket.socketId);
-            console.log(sockets);
             if (sockets.length === socketsLength) {
                 start();
             }
@@ -99,7 +98,7 @@ function start(){
     }
     setTimeout(function(){
         console.log('start');
-        if(pings.length == 3 || pings.length == 2){
+        if(pings.length > 1){
             var message = {
                 type : 'start game',
                 data : {
