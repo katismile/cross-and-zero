@@ -106,19 +106,20 @@ var TikTakToe = {
                 TikTakToe.setPosition( TikTakToe.games[id].current,  TikTakToe.games[id].field, combination);
 
                 if(TikTakToe.checkWinner( TikTakToe.games[id].field)){
-                    options.message = 'The winner is ' +  TikTakToe.games[id].socketsName[ TikTakToe.games[id].current];
 
+                    options.message = 'The winner is ' +  TikTakToe.games[id].socketsName[ TikTakToe.games[id].current];
+                    console.log(options.message);
                     pub.publish('finish', JSON.stringify(options));
 
                 } else if (!TikTakToe.checkWinner( TikTakToe.games[id].field) &&  TikTakToe.games[id].combinations.length == 0){
                     options.message = 'The game is finished, you both lost';
-
+                    console.log(options.message);
                     pub.publish('finish', JSON.stringify(options));
 
                 } else {
 
                     TikTakToe.games[id].current++;
-                    if(TikTakToe.games[id].current > 2) {
+                    if(TikTakToe.games[id].current > TikTakToe.games[id].sockets.length - 1) {
                         TikTakToe.games[id].current = 0;
                     }
                     options.current = TikTakToe.games[id].current;
@@ -166,9 +167,11 @@ var TikTakToe = {
         console.log(table.toString());
     },
     disconnect: function(options) {
+
         var gameId = options.gameId,
             socketId = options.socketId,
             data = {};
+        console.log('game ' + this.games[gameId]);
 
         if(this.games[gameId]) {
             if(this.games[gameId].sockets.indexOf(socketId)) {
@@ -176,7 +179,8 @@ var TikTakToe = {
                 this.games[gameId].sockets.splice(index, 1);
 
                 data.sockets = this.games[gameId].sockets;
-
+                console.log('tik tak toe    DISCONNECT');
+                console.log(data.sockets.length + "   "  + data.sockets);
                 pub.publish('restart', JSON.stringify(data));
             }
             this.games[gameId] = null;

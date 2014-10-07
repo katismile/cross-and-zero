@@ -4,15 +4,12 @@ var net = require('net'),
     sockets = {},
     store = {},
     gameId = 0,
-    checkPing = [],
-    mainSocket;
+    checkPing = [];
 
     store.sockets = [];
 
 var server = net.createServer(function(socket) {
     console.log('connect');
-    mainSocket = socket;
-
     var id = Math.floor(Math.random()*1e5);
 
     socket.gameId = gameId;
@@ -23,10 +20,12 @@ var server = net.createServer(function(socket) {
         store.sockets.push(id);
     }
 
+    console.log('begin sockets ' + store.sockets.length + ' ' + store.sockets);
+
     if(store.sockets.length == 3) {
         store.gameId = gameId;
 
-        start(socket, function(err, res) {
+        start(function(err, res) {
             if(err) throw err;
 
             store.sockets = [];
@@ -47,7 +46,7 @@ var server = net.createServer(function(socket) {
             redis.lpush('tasks', data);
         }
     });
-    socket.on('end', function(){
+    socket.on('end', function() {
 
         var obj = {
             action: "disconnect",
@@ -75,20 +74,22 @@ sub.on('message', function(channel, message) {
     var data = JSON.parse(message);
 
     if (channel == 'restart') {
-        sockets[data.sockets[0]].gameId = gameId;
 
         for(var t = 0; t < data.sockets.length; t++) {
             store.sockets.push(data.sockets[t]);
+            sockets[data.sockets[t]].gameId = gameId;
         }
+        console.log(' restart sockets ' + store.sockets.length + ' ' + store.sockets);
 
-        if(store.sockets.length == 3) {
-            start(mainSocket, function(err, res) {
+        if(store.sockets.length > 1) {
+            store.gameId++;
+            start(function(err, res) {
                 if(err) throw err;
 
                 store.sockets = [];
                 checkPing = [];
                 gameId++;
-                console.log('store ' + store.sockets + '  ' + store.sockets.length);
+                console.log('restart sockets ' + store.sockets.length + ' ' + store.sockets);
             });
         }
     } else if (channel == 'delete') {
@@ -96,6 +97,22 @@ sub.on('message', function(channel, message) {
         if(store.sockets.indexOf(data.socket) != -1) {
             var index = store.sockets.indexOf(data.socket);
             store.sockets.splice(index, 1);
+        }
+        if(data.sockets){
+            store.sockets = data.sockets;
+        }
+
+        console.log('delete sockets ' + store.sockets.length + ' ' + store.sockets);
+
+        if(store.sockets.length > 1) {
+            store.gameId = gameId;
+            start(function(err, res) {
+                if(err) throw err;
+
+                store.sockets = [];
+                checkPing = [];
+                gameId++;
+            });
         }
     } else {
         socket = data.sockets[data.current];
@@ -109,7 +126,7 @@ sub.on('message', function(channel, message) {
                     store.sockets.push(data.sockets[i]);
                 }
             }
-            start(mainSocket, function(err, res) {
+            start(function(err, res) {
                 if(err) throw err;
 
                 store.sockets = [];
@@ -130,15 +147,18 @@ sub.on('message', function(channel, message) {
 
 });
 
-function start(socket, next) {
+function start(next) {
+    console.log('start');
 
     for(var i = 0; i < store.sockets.length; i++) {
         var index = store.sockets[i];
+        console.log(index);
         sockets[index].write(JSON.stringify('ping'));
     }
 
-    socket.setTimeout(5000,function(){
-        if(checkPing.length == 3) {
+    setTimeout(function(){
+        console.log(checkPing.length  + '   ' + store.sockets.length);
+        if(checkPing.length == store.sockets.length) {
             console.log('Ok length of players');
             var obj = {
                 action: "start",
@@ -150,5 +170,5 @@ function start(socket, next) {
             });
             next(null);
         }
-    });
+    }, 5000);
 }

@@ -1,6 +1,7 @@
 var net = require('net'),
     argv = require('optimist').argv,
-    tik_tak_toe = require('./tik_tak_toe');
+    tik_tak_toe = require('./tik_tak_toe'),
+    controller = require('./controller_for_client');
 
 if(argv.c) {
     for(var j = 0; j < argv.c; j++) {
@@ -34,8 +35,13 @@ function createSocket() {
         if(typeof JSON.parse(data.toString()) === 'string') {
             console.log(JSON.parse(data.toString()));
 
-            if(JSON.parse(data.toString()).toLowerCase().indexOf('ping') != -1) {
-                client.write(JSON.stringify('OK'));
+            var action = JSON.parse(data.toString()),
+                options = {
+                    client: client
+                };
+
+            if(typeof controller[action] === 'function') {
+                controller[action](options);
             }
         }
     });

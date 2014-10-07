@@ -15,6 +15,7 @@ var worker = async(function(){
 
             var action = task.action,
                 data = task.data;
+            console.log("action " + action);
         }
 
         if(typeof tik_tak_toe[action] === 'function') {
