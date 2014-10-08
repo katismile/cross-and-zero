@@ -1,55 +1,90 @@
 var net = require('net');
-var sockets = [];
+var sockets = {};
 var socketsPool = {};
 var redis = require('redis').createClient();
 var sub = require('redis').createClient();
 var i = 0;
 var socketId = 0;
 var pings = [];
+var suits = ['x', '0', 'y'];
 var socketsLength;
+var flag = true;
+
 var server = net.createServer(function(socket) {
-    if (sockets.length < 3) {
-        socket.gameId = i;
-        socket.socketId = socketId;
-        socketsPool[socketId] = socket;
-        sockets.push(socketId);
-        socketId++;
+    if (Object.keys(sockets).length < 3) {
+        var message = {
+            setting: 'choose suit',
+            data: {
+                suits: suits
+            }
+        };
+        socket.write(JSON.stringify(message));
     }
-    if (sockets.length == 2) {
-        setTimeout(start, 30000);
+    if (Object.keys(sockets).length == 1) {
+        console.log('st');
+        setTimeout(start, 10000);
     }
     socket.on('data', function(data) {
         var message = data.toString();
-        if (message === 'ping') {
-            console.log('ping');
-            pings.push(socket);
-        }
-        else if(message === 'new game'){
-            sockets.push(socket.socketId);
-            if (sockets.length === socketsLength) {
-                start();
-            }
-        }
-        else if (message.indexOf('[') !== -1) {
-            var id = JSON.parse(message)[0];
-            var combination = JSON.parse(message)[1];
-            var combinations = JSON.parse(message)[2];
-            var setMessage = {
-                type : 'set position',
-                data : {
-                    id : id,
-                    combination : combination,
-                    combinations : combinations
+        var requestHandler = {
+            'ping': function(){
+                console.log('ping');
+                pings.push(socket)
+            },
+            'new game': function(){
+                (function newGame(){
+                    if(flag) {
+                        var message = {
+                            setting: 'choose suit',
+                            data: {
+                                suits: suits
+                            }
+                        };
+                        socket.write(JSON.stringify(message));
+                        flag = false;
+                    }
+                    else{
+                        setTimeout(newGame,500)
+                    }
+                })()
+            },
+            'make move':function(){
+                var parsed = JSON.parse(message);
+                var id = parsed.data.id;
+                var combination = parsed.data.combination;
+                var combinations = parsed.data.combinations;
+                var setMessage = {
+                    type : 'set position',
+                    data : {
+                        id : id,
+                        combination : combination,
+                        combinations : combinations
+                    }
+                };
+                redis.lpush('tasks', JSON.stringify(setMessage));
+            },
+            'choose suit': function(){
+                var parsed  = JSON.parse(message);
+                suits = parsed.data.suits;
+                flag = true;
+                socket.suit = parsed.data.suit;
+                socket.gameId = i;
+                socket.socketId = socketId;
+                socketsPool[socketId] = socket;
+                sockets[parsed.data.suit] = socketId;
+                socketId++;
+                if (Object.keys(sockets).length == socketsLength) {
+                    setTimeout(start, 10000);
                 }
-            };
-            redis.lpush('tasks', JSON.stringify(setMessage));
-        }
+            }
+        };
+        var parsed = JSON.parse(message);
+        requestHandler[parsed["setting"]]();
     });
 
     socket.on('end', function() {
-        if (sockets.indexOf(socket.socketId) != -1) {
-            var index = sockets.indexOf(socket);
-            sockets.splice(index, 1);
+        if (sockets[socket.suit] != -1) {
+            delete sockets[socket.suit];
         }
         delete socketsPool[socket.socketId];
         var gameId = socket.gameId;
@@ -82,22 +117,26 @@ sub.on('message', function(channel, message) {
         for(var i = 0; i < sockIds.length; i++){
             if (socketsPool[sockIds[i]]){
                 socketsPool[sockIds[i]].gameId = i;
-                sockets.push(sockIds[i]);
-                if (sockets.length > 1) {
-                    start()
-                }
+                var message = {
+                    setting: 'choose suit',
+                    data: {
+                        suits: suits
+                    }
+                };
+                socketsLength = sockIds.length;
+                socketsPool[sockIds[i]].write(JSON.stringify(message));
             }
         }
     }
 });
 
 function start(){
-    socketsLength = sockets.length;
-    for(var j = 0; j < sockets.length; j ++){
-        socketsPool[sockets[j]].write(JSON.stringify({setting: 'ping'}));
+    socketsLength = Object.keys(sockets).length;
+    for(var j = 0; j < Object.keys(sockets).length; j ++){
+        socketsPool[sockets[Object.keys(sockets)[j]]].write(JSON.stringify({setting: 'ping'}));
     }
     setTimeout(function(){
-        console.log('start');
+        console.log('start', sockets);
         if(pings.length > 1){
             var message = {
                 type : 'start game',
@@ -107,9 +146,12 @@ function start(){
                 }
             };
             redis.lpush('tasks', JSON.stringify(message));
-            sockets = [];
+            sockets = {};
             i++;
             pings = [];
+            suits = ['x', '0', 'y'];
         }
     }, 5000)
 }
+
+

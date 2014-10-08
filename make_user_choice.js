@@ -1,6 +1,6 @@
 var inquirer = require('inquirer');
 module.exports = function(gameId, combinations, client) {
-    var senddata = [];
+    var data = {};
     var choices = [];
 
     for(var i = 0; i < combinations.length; i++) {
@@ -20,9 +20,13 @@ module.exports = function(gameId, combinations, client) {
                 combinations.splice(i, 1)
             }
         }
-        senddata.push(gameId);
-        senddata.push(JSON.parse(combination));
-        senddata.push(combinations);
-        client.write(JSON.stringify(senddata));
+        data.id = gameId;
+        data.combination = JSON.parse(combination);
+        data.combinations = combinations;
+        var str = {
+            setting: 'make move',
+            data: data
+        };
+        client.write(JSON.stringify(str));
     });
 };

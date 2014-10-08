@@ -1,12 +1,16 @@
 var drawTable = require('./draw_table');
 var makeChoiceClient = require('./make_user_choice');
 var makeChoiceBot = require('./make_bot_choice');
+var inquirer = require('inquirer');
 
 exports.finishMessage = function(message, client) {
     var winnerMessage = JSON.parse(message);
     console.log(drawTable(winnerMessage.field));
     console.log(winnerMessage.message);
-    client.write('new game');
+    var newGame = {
+        setting: 'new game'
+    };
+    client.write(JSON.stringify(newGame));
 };
 exports.choosePositionClient = function(message, client) {
     var parseMessage = JSON.parse(message);
@@ -28,10 +32,12 @@ exports.disconnect = function(message) {
 };
 
 exports.ping = function(message, client){
-    client.write('ping');
+    var pingMessage = {
+        setting: 'ping'
+    };
+    client.write(JSON.stringify(pingMessage));
 };
-exports.chooseSuit = function(message, client){
-    console.log(JSON.parse(message));
+exports.chooseSuitBot = function(message, client){
     var parsed = JSON.parse(message);
     var comb = parsed.data.suits;
     var value = Math.floor(Math.random()*comb.length);
@@ -44,4 +50,31 @@ exports.chooseSuit = function(message, client){
         }
     };
     client.write(JSON.stringify(suitMessage))
+};
+exports.chooseSuitClient = function(message, client){
+    var parsed = JSON.parse(message);
+    var comb = parsed.data.suits;
+    inquirer.prompt([
+        {
+            type: 'list',
+            name: 'suits',
+            message: 'Choose suit',
+            choices: comb
+        }
+    ], function (answer) {
+        var combination = answer.suits;
+        for(var i = 0; i < comb.length; i++){
+            if(comb[i] + "" == combination){
+                comb.splice(i, 1)
+            }
+        }
+        var str = {
+            setting: 'choose suit',
+            data: {
+                suits: comb,
+                suit: combination
+            }
+        };
+        client.write(JSON.stringify(str));
+    });
 };

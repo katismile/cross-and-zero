@@ -15,7 +15,7 @@ function createSocket() {
         writable: true
     });
     client.connect(7777, function() {
-        client.write('Hello Server!');
+        //client.write('Hello Server!');
     });
     client.on('data', function(data) {
         var message = data.toString();
@@ -33,7 +33,7 @@ function createSocket() {
                 controller.ping(message, client)
             },
             'choose suit': function(){
-                controller.chooseSuit(message, client);
+                controller.chooseSuitBot(message, client);
             }
         };
         var parsed = JSON.parse(message);
