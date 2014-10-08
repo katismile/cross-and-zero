@@ -21,7 +21,6 @@ var server = net.createServer(function(socket) {
         socket.write(JSON.stringify(message));
     }
     if (Object.keys(sockets).length == 1) {
-        console.log('st');
         setTimeout(start, 10000);
     }
     socket.on('data', function(data) {

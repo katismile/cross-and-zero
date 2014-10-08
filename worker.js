@@ -9,8 +9,10 @@ var stayed = 'to stayed user';
 var worker = async(function() {
     while(true) {
         var task = await(redis.brpop.bind(redis, 'tasks', 1000));
-        var parsed = JSON.parse(task[1]);
-        taskHandler[parsed.type](parsed.data);
+        if(task){
+            var parsed = JSON.parse(task[1]);
+            taskHandler[parsed.type](parsed.data);
+        }
     }
 });
 worker();
