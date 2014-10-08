@@ -7,7 +7,12 @@ var net = require('net'),
     gameId = 0,
     checkPing = [];
 
+var numberOfPlayers = 0;
+
+var figures = [];
     store.sockets = [];
+    store.socketsName = {};
+var startGame = false;
 
 var server = net.createServer(function(socket) {
     console.log('connect');
@@ -45,7 +50,14 @@ var server = net.createServer(function(socket) {
         }
 
         if(typeof JSON.parse(data.toString()) === 'object') {
-            redis.lpush('tasks', data);
+            if(JSON.parse(data.toString()).forServer) {
+                var action = JSON.parse(data.toString()).action,
+                    mainData = JSON.parse(data.toString()).data;
+
+                controller[action](mainData);
+            } else {
+                redis.lpush('tasks', data);
+            }
         }
     });
     socket.on('end', function() {
@@ -156,7 +168,10 @@ function start(next) {
         var index = store.sockets[i];
         console.log(index);
         sockets[index].write(JSON.stringify('ping'));
+        console.log(sockets[index].figure);
+        store.socketsName[i+''] = sockets[index].figure;
     }
+    store.figures = figures;
 
     setTimeout(function(){
         console.log(checkPing.length  + '   ' + store.sockets.length);
@@ -174,3 +189,16 @@ function start(next) {
         }
     }, 5000);
 }
+
+var controller = {
+    ping: function() {
+
+    },
+    saveFigure: function(options) {
+        var figure = options.figure;
+        figures.push(figure);
+
+        console.log(figures);
+    }
+
+};

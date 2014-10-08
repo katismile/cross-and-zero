@@ -1,6 +1,7 @@
 var net = require('net'),
     argv = require('optimist').argv,
     tik_tak_toe = require('./tik_tak_toe'),
+    inquirer = require('inquirer'),
     controller = require('./controller_for_client');
 
 if(argv.c) {
@@ -10,6 +11,7 @@ if(argv.c) {
 } else {
     createSocket();
 }
+var figures = ['X', 'O', 'Y'];
 
 function createSocket() {
     var client = new net.Socket( {
@@ -18,8 +20,28 @@ function createSocket() {
         writable: true
     });
 
-    client.connect(7777, function() {
-        client.write(JSON.stringify('Hello Server!'));
+    client.connect(7777, function(next) {
+
+        inquirer.prompt([
+            {
+                type: "list",
+                name: "figure",
+                message: "What figure do you want to play?",
+                choices: figures
+            }
+        ], function( answer ) {
+
+            var obj = {
+                action: 'saveFigure',
+                forServer: true,
+                data: {
+                    figure: answer.figure
+                }
+            };
+
+            client.write(JSON.stringify(obj));
+        });
+        //client.write(JSON.stringify('Hello Server!'));
     });
 
     client.on('data', function(data) {
@@ -56,14 +78,14 @@ function move(client, message) {
     var setField =  message.isSmall ? "setSmallField" : "setBigField";
 
 
-    tik_tak_toe[setField](field);
+    //tik_tak_toe[setField](field);
 
     var length = combinations.length,
         value = Math.floor(Math.random()*length),
         combination = combinations.splice(value, 1)[0];
     field[combination[0]][combination[1]] = current;
 
-    tik_tak_toe[setField](field);
+    //tik_tak_toe[setField](field);
 
     message['combination'] = combination;
     message['combinations'] = combinations;

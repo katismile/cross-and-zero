@@ -6,11 +6,11 @@ var TikTakToe = {
     games: [],
     start: function(options) {
 
-        var socketsName = {
-            0 : 'Cross',
-            1: 'Zeroes',
-            2: 'YYYYYY'
-        };
+//        var socketsName = {
+//            0 : 'Cross',
+//            1: 'Zeroes',
+//            2: 'YYYYYY'
+//        };
         var combinationsBig = [
             [0, 0],
             [0, 1],
@@ -57,12 +57,12 @@ var TikTakToe = {
         console.log("Game " + options.gameId + " is started!");
 
         if(players.length == 2) {
-            this.games[options.gameId] = new this.createGame(options.gameId, combinationsSmall, fieldSmall, socketsName, players);
+            this.games[options.gameId] = new this.createGame(options.gameId, combinationsSmall, fieldSmall, options.figures, players);
             this.games[options.gameId].isSmall = true;
             pub.publish('game', JSON.stringify(this.games[options.gameId]));
         }
         if(players.length == 3) {
-            this.games[options.gameId] = new this.createGame(options.gameId, combinationsBig, fieldBig, socketsName, players);
+            this.games[options.gameId] = new this.createGame(options.gameId, combinationsBig, fieldBig,  options.figures, players);
             this.games[options.gameId].isSmall = false;
             pub.publish('game', JSON.stringify(this.games[options.gameId]));
         }
@@ -155,7 +155,7 @@ var TikTakToe = {
                 this.games[id].combinations = options.combinations;
                 this.setPosition( this.games[id].current,  this.games[id].field, combination);
 
-                this[setField](this.games[id].field);
+                this[setField](this.games[id].field, this.games[id].socketsName);
 
                 if(this[checkWinner]( this.games[id].field)){
 
@@ -182,7 +182,7 @@ var TikTakToe = {
         }
     },
 
-    setBigField: function (field) {
+    setBigField: function (field, names) {
 
         var table = new Table({
             chars: { 'top': '═', 'top-mid': '╤', 'top-left': '╔', 'top-right': '╗', 'bottom': '═', 'bottom-mid': '╧', 'bottom-left': '╚', 'bottom-right': '╝', 'left': '║', 'left-mid': '╟', 'mid': '─', 'mid-mid': '┼', 'right': '║', 'right-mid': '╢', 'middle': '│' }
@@ -195,13 +195,13 @@ var TikTakToe = {
             for (var j = 0; j < 5; j++) {
                 if (field[i][j] != undefined) {
                     if (field[i][j] == 0) {
-                        newArr.push('X');
+                        newArr.push(names[0]);
                     }
                     if (field[i][j] == 1) {
-                        newArr.push('O');
+                        newArr.push(names[1]);
                     }
                     if (field[i][j] == 2) {
-                        newArr.push('Y');
+                        newArr.push(names[2]);
                     }
                 } else {
                     newArr.push('');
@@ -218,7 +218,7 @@ var TikTakToe = {
         );
         console.log(table.toString());
     },
-    setSmallField: function(field) {
+    setSmallField: function(field, names) {
         var table = new Table({
             chars: { 'top': '═', 'top-mid': '╤', 'top-left': '╔', 'top-right': '╗', 'bottom': '═', 'bottom-mid': '╧', 'bottom-left': '╚', 'bottom-right': '╝', 'left': '║', 'left-mid': '╟', 'mid': '─', 'mid-mid': '┼', 'right': '║', 'right-mid': '╢', 'middle': '│' }
         });
@@ -230,10 +230,10 @@ var TikTakToe = {
             for (var j = 0; j < 3; j++) {
                 if (field[i][j] != undefined) {
                     if (field[i][j] == 0) {
-                        newArr.push('X');
+                        newArr.push(names[0]);
                     }
                     if (field[i][j] == 1) {
-                        newArr.push('O');
+                        newArr.push(names[1]);
                     }
                 } else {
                     newArr.push('');

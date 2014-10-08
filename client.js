@@ -11,6 +11,7 @@ if(argv.c) {
 } else {
     createSocket();
 }
+var figures = ['X', 'O', 'Y'];
 
 function createSocket() {
     var client = new net.Socket( {
@@ -20,7 +21,27 @@ function createSocket() {
     });
 
     client.connect(7777, function() {
-        client.write(JSON.stringify('Hello Server!'));
+
+        inquirer.prompt([
+            {
+                type: "list",
+                name: "figure",
+                message: "What figure do you want to play?",
+                choices: figures
+            }
+        ], function( answer ) {
+
+            var obj = {
+                action: 'saveFigure',
+                forServer: true,
+                data: {
+                    figure: answer.figure
+                }
+            };
+
+            client.write(JSON.stringify(obj));
+        });
+        //client.write(JSON.stringify('Hello Server!'));
     });
 
     client.on('data', function(data) {
@@ -49,9 +70,12 @@ function createSocket() {
 function move(client, message) {
     var combinations = message.combinations,
         field = message.field,
-        current  = message.current;
+        current  = message.current,
+        socketsNames = message.socketsName;
 
-        tik_tak_toe.setField(field);
+        var setField =  message.isSmall ? "setSmallField" : "setBigField";
+
+        tik_tak_toe[setField](field, socketsNames);
 
         var choices = [];
 
@@ -70,7 +94,7 @@ function move(client, message) {
             var combination = answer.position;
             field[JSON.parse(combination)[0]][JSON.parse(combination)[1]] = current;
 
-            tik_tak_toe.setField(field);
+            tik_tak_toe[setField](field, socketsNames);
 
             for(var j = 0; j < combinations.length; j++) {
                 if( combinations[j] + "" == JSON.parse(combination) ) {
