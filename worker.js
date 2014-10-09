@@ -34,7 +34,7 @@ var taskHandler = {
             games[id].combinations = combinations;
             setPosition(games[id].current, games[id].field, combination);
             var isWinner = (checkWinner(games[id].field));
-            var validCombinations = (!checkWinner(games[id].field) && games[id].combinations.length == 0);
+            var allLost = (!checkWinner(games[id].field) && games[id].combinations.length == 0);
             if (isWinner) {
                 console.log('win');
                 var winnerMessage = {
@@ -46,7 +46,7 @@ var taskHandler = {
                     redis.publish(channel, JSON.stringify([games[id].sockets[Object.keys(games[id].sockets)[i]], winnerMessage]));
                 }
             }
-            else if (validCombinations) {
+            else if (allLost) {
                 console.log('lost');
                 var lostMessage = {
                     setting: 'finish message',
