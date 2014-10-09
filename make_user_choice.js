@@ -1,9 +1,9 @@
 var inquirer = require('inquirer');
-module.exports = function(gameId, combinations, client) {
+module.exports = function (gameId, combinations, client) {
     var data = {};
     var choices = [];
 
-    for(var i = 0; i < combinations.length; i++) {
+    for (var i = 0; i < combinations.length; i++) {
         choices.push(JSON.stringify(combinations[i]));
     }
     inquirer.prompt([
@@ -15,8 +15,8 @@ module.exports = function(gameId, combinations, client) {
         }
     ], function (answer) {
         var combination = answer.position;
-        for(var i = 0; i < combinations.length; i++){
-            if(combinations[i] + "" == JSON.parse(combination)){
+        for (var i = 0; i < combinations.length; i++) {
+            if (combinations[i] + "" == JSON.parse(combination)) {
                 combinations.splice(i, 1)
             }
         }

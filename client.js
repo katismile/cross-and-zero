@@ -3,37 +3,37 @@ var argv = require('optimist').argv;
 var controller = require('./controller');
 
 if (argv.c) {
-    for(var j = 0; j < argv.c; j++) {
+    for (var j = 0; j < argv.c; j++) {
         createSocket();
     }
 }
 else {
     createSocket();
 }
-function createSocket() {
+function createSocket () {
     var client = new net.Socket( {
         writable: true
     });
     client.connect(7777, function() {
         //client.write('Hello Server!');
     });
-    client.on('data', function(data) {
+    client.on('data', function (data) {
         var message = data.toString();
         var requestHandler = {
-            'finish message': function() {
-                controller.finishMessage(message, client);
+            'finish message': function () {
+                controller.finishMessage (message, client);
             },
-            'choose position': function() {
-                controller.choosePositionClient(message, client)
+            'choose position': function () {
+                controller.choosePositionClient (message, client)
             },
-            'opponent exit': function() {
-                controller.disconnect(message)
+            'opponent exit': function () {
+                controller.disconnect (message)
             },
-            'ping': function(){
-                controller.ping(message, client)
+            'ping': function () {
+                controller.ping (message, client)
             },
-            'choose suit': function(){
-                controller.chooseSuitClient(message, client);
+            'choose suit': function () {
+                controller.chooseSuitClient (message, client);
             }
         };
         var parsed = JSON.parse(message);

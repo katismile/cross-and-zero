@@ -1,15 +1,17 @@
 var redis = require('redis').createClient();
 var async = require('asyncawait/async');
 var await = require('asyncawait/await');
-var Game = require('./Game');
+
 var checkWinner = require('./check_winner');
 var games = [];
 var channel  = 'sockets commands';
 var stayed = 'to stayed user';
-var worker = async(function() {
-    while(true) {
+var start = require('./start.js');
+
+var worker = async(function () {
+    while (true) {
         var task = await(redis.brpop.bind(redis, 'tasks', 1000));
-        if(task){
+        if (task) {
             var parsed = JSON.parse(task[1]);
             taskHandler[parsed.type](parsed.data);
         }
@@ -18,14 +20,14 @@ var worker = async(function() {
 worker();
 
 var taskHandler = {
-    'start game': function(data) {
+    'start game': function (data) {
         var sockets = data.sockets;
         var gameId = data.i;
-        start(games, gameId, sockets);
+        start(games, gameId, sockets, redis, channel);
     },
-    'set position': function(data) {
+    'set position': function (data) {
         var id = data.id;
-        if(games[id] && games[id].combinations.length >= 0 && Object.keys(games[id].sockets).length > 1) {
+        if (games[id] && games[id].combinations.length >= 0 && Object.keys(games[id].sockets).length > 1) {
             var combination = data.combination;
             var combinations = data.combinations;
             games[id].combinations = combinations;
@@ -37,7 +39,7 @@ var taskHandler = {
                     field: games[id].field,
                     message: 'The winner is ' + games[id].current + ', game: ' + id
                 };
-                for (var i = 0; i < Object.keys(games[id].sockets).length; i++){
+                for (var i = 0; i < Object.keys(games[id].sockets).length; i++) {
                     redis.publish(channel, JSON.stringify([games[id].sockets[Object.keys(games[id].sockets)[i]], winnerMessage]));
                 }
             }
@@ -48,18 +50,18 @@ var taskHandler = {
                     field: games[id].field,
                     message: 'The game is finished, all of you lost'
                 };
-                for (var j = 0; j < Object.keys(games[id].sockets).length; j++){
+                for (var j = 0; j < Object.keys(games[id].sockets).length; j++) {
                     redis.publish(channel, JSON.stringify([games[id].sockets[Object.keys(games[id].sockets)[j]], lostMessage]));
                 }
             }
             else {
-                if(games[id].current === 'x'){
+                if (games[id].current === 'x') {
                     games[id].current = games[id].sockets['0'] !== undefined ? '0' : 'y';
                 }
-                else if(games[id].current === '0'){
+                else if (games[id].current === '0') {
                     games[id].current = games[id].sockets['y'] !== undefined ? 'y' : 'x';
                 }
-                else{
+                else {
                     games[id].current = games[id].sockets ['x'] !== undefined ? 'x' : '0';
                 }
                 var message = {
@@ -72,11 +74,11 @@ var taskHandler = {
             }
         }
     },
-    'disconnect': function(data) {
+    'disconnect': function (data) {
         console.log('disconnect');
         var gameId = data.gameId;
         var socketId = data.socketId;
-        if(games[gameId]){
+        if (games[gameId]) {
             var stayedPlayers = [];
             for (var i = 0; i < Object.keys(games[gameId].sockets).length; i++) {
                 if (socketId !== games[gameId].sockets[Object.keys(games[gameId].sockets)[i]]) {
@@ -100,33 +102,8 @@ var taskHandler = {
     }
 };
 
-function start(games, i, sockets) {
-    var combinations = [];
-    var field = [];
-    var counter = Object.keys(sockets).length === 2 ? 3 : 5;
-    for(var j = 0; j < counter; j++){
-        field.push([]);
-        for(var k = 0; k < counter; k++){
-            combinations.push([j, k]);
-            field[j].push(' ');
-        }
-    }
-    var current;
-    if (sockets['y']) {current = 'y'; }
-    if (sockets['0']) {current = '0'; }
-    if (sockets['x']) {current = 'x'; }
-    console.log("start");
-    console.log(sockets);
-    games[i] = new Game(i, combinations, field, sockets, current);
-    var message = {
-        setting: 'choose position',
-        id: games[i].id,
-        combinations: games[i].combinations,
-        field: games[i].field
-    };
-    redis.publish(channel, JSON.stringify([games[i].sockets[games[i].current], message]));
-}
-function setPosition(current, field, comb) {
+
+function setPosition (current, field, comb) {
     var position1 = comb[0],
         position2 = comb[1];
     field[position1][position2] = current;

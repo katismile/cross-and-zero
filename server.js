@@ -26,12 +26,12 @@ var server = net.createServer(function(socket) {
     socket.on('data', function(data) {
         var message = data.toString();
         var requestHandler = {
-            'ping': function(){
+            'ping': function () {
                 console.log('ping');
                 pings.push(socket)
             },
-            'new game': function(){
-                (function newGame(){
+            'new game': function () {
+                (function newGame () {
                     if(flag) {
                         var message = {
                             setting: 'choose suit',
@@ -43,11 +43,11 @@ var server = net.createServer(function(socket) {
                         flag = false;
                     }
                     else{
-                        setTimeout(newGame,500)
+                        setTimeout (newGame,500)
                     }
                 })()
             },
-            'make move':function(){
+            'make move': function () {
                 var parsed = JSON.parse(message);
                 var id = parsed.data.id;
                 var combination = parsed.data.combination;
@@ -62,7 +62,7 @@ var server = net.createServer(function(socket) {
                 };
                 redis.lpush('tasks', JSON.stringify(setMessage));
             },
-            'choose suit': function(){
+            'choose suit': function () {
                 var parsed  = JSON.parse(message);
                 suits = parsed.data.suits;
                 flag = true;
@@ -81,10 +81,9 @@ var server = net.createServer(function(socket) {
         requestHandler[parsed["setting"]]();
     });
 
-    socket.on('end', function() {
-        if (sockets[socket.suit] != -1) {
-            delete sockets[socket.suit];
-        }
+    socket.on('end', function () {
+        if (sockets[socket.suit] != -1) delete sockets[socket.suit];
+        delete socketsPool[socket.socketId];
         var gameId = socket.gameId;
         var socketId = socket.socketId;
         var message = {
@@ -94,10 +93,9 @@ var server = net.createServer(function(socket) {
                 socketId : socketId
             }
         };
-        delete socketsPool[socket.socketId];
         redis.lpush('tasks', JSON.stringify(message));
     });
-}).listen(7777, function() {
+}).listen(7777, function () {
     console.log('Server is running!');
 });
 
@@ -107,14 +105,12 @@ sub.on('message', function(channel, message) {
     if (channel == 'sockets commands') {
         var socketId = JSON.parse(message)[0];
         var messageToSocket = JSON.parse(message)[1];
-        if (socketsPool[socketId]){
-            socketsPool[socketId].write(JSON.stringify(messageToSocket));
-        }
+        if (socketsPool[socketId]) socketsPool[socketId].write(JSON.stringify(messageToSocket));
     }
     else if (channel == 'to stayed user') {
         var sockIds = JSON.parse(message).socketId;
-        for(var i = 0; i < sockIds.length; i++){
-            if (socketsPool[sockIds[i]]){
+        for (var i = 0; i < sockIds.length; i++) {
+            if (socketsPool[sockIds[i]]) {
                 socketsPool[sockIds[i]].gameId = i;
                 var messageToStayed = {
                     setting: 'choose suit',
@@ -129,14 +125,14 @@ sub.on('message', function(channel, message) {
     }
 });
 
-function start(){
+function start() {
     socketsLength = Object.keys(sockets).length;
-    for(var j = 0; j < Object.keys(sockets).length; j ++){
+    for (var j = 0; j < Object.keys(sockets).length; j ++) {
         socketsPool[sockets[Object.keys(sockets)[j]]].write(JSON.stringify({setting: 'ping'}));
     }
-    setTimeout(function(){
+    setTimeout (function () {
         console.log('start', sockets);
-        if(pings.length > 1){
+        if (pings.length > 1) {
             var message = {
                 type : 'start game',
                 data : {
