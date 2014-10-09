@@ -125,14 +125,14 @@ sub.on('message', function(channel, message) {
     }
 });
 
-function start() {
+function start(){
     socketsLength = Object.keys(sockets).length;
-    for (var j = 0; j < Object.keys(sockets).length; j ++) {
+    for(var j = 0; j < Object.keys(sockets).length; j ++){
         socketsPool[sockets[Object.keys(sockets)[j]]].write(JSON.stringify({setting: 'ping'}));
     }
-    setTimeout (function () {
+    setTimeout(function(){
         console.log('start', sockets);
-        if (pings.length > 1){
+        if(pings.length > 1){
             var message = {
                 type : 'start game',
                 data : {
