@@ -85,7 +85,6 @@ var server = net.createServer(function(socket) {
         if (sockets[socket.suit] != -1) {
             delete sockets[socket.suit];
         }
-        delete socketsPool[socket.socketId];
         var gameId = socket.gameId;
         var socketId = socket.socketId;
         var message = {
@@ -95,6 +94,7 @@ var server = net.createServer(function(socket) {
                 socketId : socketId
             }
         };
+        delete socketsPool[socket.socketId];
         redis.lpush('tasks', JSON.stringify(message));
     });
 }).listen(7777, function() {
@@ -116,14 +116,14 @@ sub.on('message', function(channel, message) {
         for(var i = 0; i < sockIds.length; i++){
             if (socketsPool[sockIds[i]]){
                 socketsPool[sockIds[i]].gameId = i;
-                var message = {
+                var messageToStayed = {
                     setting: 'choose suit',
                     data: {
                         suits: suits
                     }
                 };
                 socketsLength = sockIds.length;
-                socketsPool[sockIds[i]].write(JSON.stringify(message));
+                socketsPool[sockIds[i]].write(JSON.stringify(messageToStayed));
             }
         }
     }
