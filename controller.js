@@ -30,8 +30,7 @@ exports.disconnect = function (message) {
     var parseMessage = JSON.parse(message);
     console.log(parseMessage.message);
 };
-
-exports.ping = function (message, client){
+exports.ping = function (message, client) {
     var pingMessage = {
         setting: 'ping'
     };

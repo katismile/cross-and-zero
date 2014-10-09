@@ -13,7 +13,7 @@ module.exports = function (gameId, combinations, client) {
             message: 'Choose position',
             choices: choices
         }
-    ], function (answer) {
+    ], function onAnswer (answer) {
         var combination = answer.position;
         for (var i = 0; i < combinations.length; i++) {
             if (combinations[i] + "" == JSON.parse(combination)) {

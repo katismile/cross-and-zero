@@ -23,7 +23,7 @@ var server = net.createServer(function(socket) {
     if (Object.keys(sockets).length == 1) {
         setTimeout(start, 10000);
     }
-    socket.on('data', function(data) {
+    socket.on('data', function (data) {
         var message = data.toString();
         var requestHandler = {
             'ping': function () {
@@ -132,7 +132,7 @@ function start() {
     }
     setTimeout (function () {
         console.log('start', sockets);
-        if (pings.length > 1) {
+        if (pings.length > 1){
             var message = {
                 type : 'start game',
                 data : {

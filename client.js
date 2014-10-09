@@ -17,7 +17,7 @@ function createSocket () {
     client.connect(7777, function() {
         //client.write('Hello Server!');
     });
-    client.on('data', function (data) {
+    client.on('data', function onData (data) {
         var message = data.toString();
         var requestHandler = {
             'finish message': function () {

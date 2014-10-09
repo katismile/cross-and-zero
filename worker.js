@@ -27,12 +27,15 @@ var taskHandler = {
     },
     'set position': function (data) {
         var id = data.id;
-        if (games[id] && games[id].combinations.length >= 0 && Object.keys(games[id].sockets).length > 1) {
+        var validGame = (games[id] && games[id].combinations.length >= 0 && Object.keys(games[id].sockets).length > 1);
+        if (validGame) {
             var combination = data.combination;
             var combinations = data.combinations;
             games[id].combinations = combinations;
             setPosition(games[id].current, games[id].field, combination);
-            if (checkWinner(games[id].field)) {
+            var isWinner = (checkWinner(games[id].field));
+            var validCombinations = (!checkWinner(games[id].field) && games[id].combinations.length == 0);
+            if (isWinner) {
                 console.log('win');
                 var winnerMessage = {
                     setting: 'finish message',
@@ -43,7 +46,7 @@ var taskHandler = {
                     redis.publish(channel, JSON.stringify([games[id].sockets[Object.keys(games[id].sockets)[i]], winnerMessage]));
                 }
             }
-            else if (!checkWinner(games[id].field) && games[id].combinations.length == 0) {
+            else if (validCombinations) {
                 console.log('lost');
                 var lostMessage = {
                     setting: 'finish message',
@@ -56,13 +59,19 @@ var taskHandler = {
             }
             else {
                 if (games[id].current === 'x') {
-                    games[id].current = games[id].sockets['0'] !== undefined ? '0' : 'y';
+                    games[id].current = (games[id].sockets['0'] !== undefined)
+                        ? '0'
+                        : 'y';
                 }
                 else if (games[id].current === '0') {
-                    games[id].current = games[id].sockets['y'] !== undefined ? 'y' : 'x';
+                    games[id].current = (games[id].sockets['y'] !== undefined)
+                        ? 'y'
+                        : 'x';
                 }
                 else {
-                    games[id].current = games[id].sockets ['x'] !== undefined ? 'x' : '0';
+                    games[id].current = (games[id].sockets ['x'] !== undefined)
+                        ? 'x'
+                        : '0';
                 }
                 var message = {
                     setting: 'choose position',
@@ -81,7 +90,8 @@ var taskHandler = {
         if (games[gameId]) {
             var stayedPlayers = [];
             for (var i = 0; i < Object.keys(games[gameId].sockets).length; i++) {
-                if (socketId !== games[gameId].sockets[Object.keys(games[gameId].sockets)[i]]) {
+                var isStayed = (socketId !== games[gameId].sockets[Object.keys(games[gameId].sockets)[i]]);
+                if (isStayed) {
                     stayedPlayers.push(games[gameId].sockets[Object.keys(games[gameId].sockets)[i]]);
                 }
             }
