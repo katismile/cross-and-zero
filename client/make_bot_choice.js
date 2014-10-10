@@ -8,7 +8,7 @@ module.exports = function (gameId, combinations, client) {
         data.combination = combination;
         data.combinations = combinations;
         var str = {
-            setting: 'make move',
+            type : 'make move',
             data: data
         };
         client.write(JSON.stringify(str));

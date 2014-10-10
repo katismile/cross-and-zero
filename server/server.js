@@ -7,24 +7,28 @@ var i = 0;
 var socketId = 0;
 var pings = [];
 var suits = ['x', '0', 'y'];
-var socketsLength;
+var socketsLength = 2;
 var flag = true;
 
 var server = net.createServer(function(socket) {
     if (Object.keys(sockets).length < 3) {
-        var message = {
-            setting: 'choose suit',
-            data: {
-                suits: suits
+        (function newGame () {
+            if(flag) {
+                socket.write(JSON.stringify({
+                    type: 'choose suit',
+                    data: {
+                        suits: suits
+                    }
+                }));
+                flag = false;
             }
-        };
-        socket.write(JSON.stringify(message));
-    }
-    if (Object.keys(sockets).length == 1) {
-        setTimeout(start, 10000);
+            else{
+                setTimeout (newGame,500)
+            }
+        })()
     }
     socket.on('data', function (data) {
-        var message = data.toString();
+        var message = JSON.parse(data.toString());
         var requestHandler = {
             'ping': function () {
                 console.log('ping');
@@ -33,13 +37,12 @@ var server = net.createServer(function(socket) {
             'new game': function () {
                 (function newGame () {
                     if(flag) {
-                        var message = {
-                            setting: 'choose suit',
+                        socket.write(JSON.stringify({
+                            type: 'choose suit',
                             data: {
                                 suits: suits
                             }
-                        };
-                        socket.write(JSON.stringify(message));
+                        }));
                         flag = false;
                     }
                     else{
@@ -48,37 +51,23 @@ var server = net.createServer(function(socket) {
                 })()
             },
             'make move': function () {
-                var parsed = JSON.parse(message);
-                var id = parsed.data.id;
-                var combination = parsed.data.combination;
-                var combinations = parsed.data.combinations;
-                var setMessage = {
-                    type : 'set position',
-                    data : {
-                        id : id,
-                        combination : combination,
-                        combinations : combinations
-                    }
-                };
-                redis.lpush('tasks', JSON.stringify(setMessage));
+                redis.lpush('tasks', JSON.stringify(message));
             },
             'choose suit': function () {
-                var parsed  = JSON.parse(message);
-                suits = parsed.data.suits;
+                suits = message.data.suits;
                 flag = true;
-                socket.suit = parsed.data.suit;
+                socket.suit = message.data.suit;
                 socket.gameId = i;
                 socket.socketId = socketId;
                 socketsPool[socketId] = socket;
-                sockets[parsed.data.suit] = socketId;
+                sockets[message.data.suit] = socketId;
                 socketId++;
                 if (Object.keys(sockets).length == socketsLength) {
                     setTimeout(start, 10000);
                 }
             }
         };
-        var parsed = JSON.parse(message);
-        requestHandler[parsed["setting"]]();
+        requestHandler[message["type"]]();
     });
 
     socket.on('end', function () {
@@ -113,7 +102,7 @@ sub.on('message', function(channel, message) {
             if (socketsPool[sockIds[i]]) {
                 socketsPool[sockIds[i]].gameId = i;
                 var messageToStayed = {
-                    setting: 'choose suit',
+                    type: 'choose suit',
                     data: {
                         suits: suits
                     }
@@ -128,7 +117,7 @@ sub.on('message', function(channel, message) {
 function start(){
     socketsLength = Object.keys(sockets).length;
     for(var j = 0; j < Object.keys(sockets).length; j ++){
-        socketsPool[sockets[Object.keys(sockets)[j]]].write(JSON.stringify({setting: 'ping'}));
+        socketsPool[sockets[Object.keys(sockets)[j]]].write(JSON.stringify({type: 'ping'}));
     }
     setTimeout(function(){
         console.log('start', sockets);

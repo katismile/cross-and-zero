@@ -2,7 +2,6 @@ var inquirer = require('inquirer');
 module.exports = function (gameId, combinations, client) {
     var data = {};
     var choices = [];
-
     for (var i = 0; i < combinations.length; i++) {
         choices.push(JSON.stringify(combinations[i]));
     }
@@ -24,7 +23,7 @@ module.exports = function (gameId, combinations, client) {
         data.combination = JSON.parse(combination);
         data.combinations = combinations;
         var str = {
-            setting: 'make move',
+            type : 'make move',
             data: data
         };
         client.write(JSON.stringify(str));

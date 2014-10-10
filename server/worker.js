@@ -25,7 +25,7 @@ var taskHandler = {
         var gameId = data.i;
         start(games, gameId, sockets, redis, channel);
     },
-    'set position': function (data) {
+    'make move': function (data) {
         var id = data.id;
         var validGame = (games[id] && games[id].combinations.length >= 0 && Object.keys(games[id].sockets).length > 1);
         if (validGame) {
@@ -38,7 +38,7 @@ var taskHandler = {
             if (isWinner) {
                 console.log('win');
                 var winnerMessage = {
-                    setting: 'finish message',
+                    type: 'finish message',
                     field: games[id].field,
                     message: 'The winner is ' + games[id].current + ', game: ' + id
                 };
@@ -49,7 +49,7 @@ var taskHandler = {
             else if (allLost) {
                 console.log('lost');
                 var lostMessage = {
-                    setting: 'finish message',
+                    type: 'finish message',
                     field: games[id].field,
                     message: 'The game is finished, all of you lost'
                 };
@@ -74,7 +74,7 @@ var taskHandler = {
                         : '0';
                 }
                 var message = {
-                    setting: 'choose position',
+                    type: 'choose position',
                     id: games[id].id,
                     combinations: games[id].combinations,
                     field: games[id].field
@@ -99,7 +99,7 @@ var taskHandler = {
                 socketId: stayedPlayers
             };
             var messageForClient = {
-                setting: 'opponent exit',
+                type: 'opponent exit',
                 message: 'You opponent has left, please wait for another player'
             };
             games[gameId] = null;

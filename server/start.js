@@ -18,7 +18,7 @@ module.exports = function (games, i, sockets, redis, channel) {
     console.log(sockets);
     games[i] = new Game (i, combinations, field, sockets, current);
     var message = {
-        setting: 'choose position',
+        type: 'choose position',
         id: games[i].id,
         combinations: games[i].combinations,
         field: games[i].field
