@@ -4,68 +4,53 @@ var pub = require('redis').createClient(),
 var TikTakToe = {
     sockets: [],
     games: [],
+    createCombinations: function(num) {
+        var arr = [];
+        for(var i = 0; i < num; i++) {
+            for(var j = 0; j < num; j++) {
+                var subArr = [];
+                subArr.push(i);
+                subArr.push(j);
+
+                arr.push(subArr);
+            }
+        }
+        return arr;
+    },
+    createEmptyField: function(num) {
+        var field = [];
+
+        for(var i = 0; i < num; i++) {
+            var row = [];
+            field.push(row);
+        }
+        return field;
+    },
     start: function(options) {
-
-//        var socketsName = {
-//            0 : 'Cross',
-//            1: 'Zeroes',
-//            2: 'YYYYYY'
-//        };
-        var combinationsBig = [
-            [0, 0],
-            [0, 1],
-            [0, 2],
-            [0, 3],
-            [0, 4],
-            [1, 0],
-            [1, 1],
-            [1, 2],
-            [1, 3],
-            [1, 4],
-            [2, 0],
-            [2, 1],
-            [2, 2],
-            [2, 3],
-            [2, 4],
-            [3, 0],
-            [3, 1],
-            [3, 2],
-            [3, 3],
-            [3, 4],
-            [4, 0],
-            [4, 1],
-            [4, 2],
-            [4, 3],
-            [4, 4]
-        ];
-        var fieldBig = [[],[],[],[],[]];
-
-        var combinationsSmall = [
-            [0, 0],
-            [0, 1],
-            [0, 2],
-            [1, 0],
-            [1, 1],
-            [1, 2],
-            [2, 0],
-            [2, 1],
-            [2, 2]
-        ];
-        var fieldSmall = [[],[],[]];
 
         var players = options.sockets;
         console.log("Game " + options.gameId + " is started!");
 
+        var field,
+            combinations;
+
         if(players.length == 2) {
-            this.games[options.gameId] = new this.createGame(options.gameId, combinationsSmall, fieldSmall, options.figures, players);
+            field = this.createEmptyField(3);
+            combinations = this.createCombinations(3);
+
+            this.games[options.gameId] = new this.createGame(options.gameId, combinations, field,  options.figures, players);
             this.games[options.gameId].isSmall = true;
-            pub.publish('game', JSON.stringify(this.games[options.gameId]));
         }
         if(players.length == 3) {
-            this.games[options.gameId] = new this.createGame(options.gameId, combinationsBig, fieldBig,  options.figures, players);
+            field = this.createEmptyField(5);
+            combinations = this.createCombinations(5);
+
+            this.games[options.gameId] = new this.createGame(options.gameId, combinations, field,  options.figures, players);
             this.games[options.gameId].isSmall = false;
-            pub.publish('game', JSON.stringify(this.games[options.gameId]));
         }
+
+        pub.publish('game', JSON.stringify(this.games[options.gameId]));
+
     },
     setPosition: function(current, field, combination) {
 
@@ -139,7 +124,7 @@ var TikTakToe = {
         this.field = field;
         this.current = 0;
         this.socketsName = socketsName;
-        this.sockets = players
+        this.sockets = players;
     },
 
     check: function(options) {

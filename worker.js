@@ -11,9 +11,8 @@ var worker = async(function(){
         task = task[1].trim();
 
         if(typeof JSON.parse(task) == 'object') {
-            task = JSON.parse(task);
-
-            var action = task.action,
+            var task = JSON.parse(task),
+                action = task.action,
                 data = task.data;
             console.log("action " + action);
         }
@@ -22,8 +21,8 @@ var worker = async(function(){
             tik_tak_toe[action](data);
         }
     }
-
     worker();
     return task;
 });
+
 worker();

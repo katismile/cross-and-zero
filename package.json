@@ -4,6 +4,7 @@
     "dependencies": {
         "optimist": "0.6.1",
         "cli-table": "0.3.0",
-        "inquirer": "0.8.0"
+        "inquirer": "0.8.0",
+        "asyncawait": "0.7.2"
     }
 }

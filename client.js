@@ -21,27 +21,7 @@ function createSocket() {
     });
 
     client.connect(7777, function() {
-
-        inquirer.prompt([
-            {
-                type: "list",
-                name: "figure",
-                message: "What figure do you want to play?",
-                choices: figures
-            }
-        ], function( answer ) {
-
-            var obj = {
-                action: 'saveFigure',
-                forServer: true,
-                data: {
-                    figure: answer.figure
-                }
-            };
-
-            client.write(JSON.stringify(obj));
-        });
-        //client.write(JSON.stringify('Hello Server!'));
+        client.write(JSON.stringify('Hello Server!'));
     });
 
     client.on('data', function(data) {
