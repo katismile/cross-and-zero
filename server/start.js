@@ -1,5 +1,6 @@
 var Game = require('./game');
-module.exports = function (games, i, sockets, redis, channel) {
+var redis = require('redis').createClient();
+module.exports = function (games, i, sockets, channel) {
     var combinations = [];
     var field = [];
     var counter = Object.keys(sockets).length === 2 ? 3 : 5;
@@ -16,6 +17,7 @@ module.exports = function (games, i, sockets, redis, channel) {
     if (sockets['x']) current = 'x';
     console.log("start");
     console.log(sockets);
+    console.log(current);
     games[i] = new Game (i, combinations, field, sockets, current);
     var message = {
         type: 'choose position',
