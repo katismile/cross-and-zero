@@ -1,5 +1,4 @@
 var Table = require('cli-table');
-
 var ConsoleRender = function(){};
 ConsoleRender.prototype.renderTable = function(field){
     var chars = { 'top': '═' , 'top-mid': '╤' , 'top-left': '╔' , 'top-right': '╗'

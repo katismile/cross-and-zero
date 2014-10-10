@@ -1,4 +1,4 @@
-var Game = require('./Game');
+var Game = require('./game');
 module.exports = function (games, i, sockets, redis, channel) {
     var combinations = [];
     var field = [];

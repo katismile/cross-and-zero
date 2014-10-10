@@ -7,7 +7,6 @@ var user = new User();
 var bot = new Bot();
 var makeChoice;
 var chooseSuit;
-
 if (argv.c) {
     for (var j = 0; j < argv.c; j++) {
         createSocket();
@@ -27,7 +26,6 @@ function createSocket () {
         makeChoice = user.makeChoice;
         chooseSuit = user.chooseSuit;
     }
-
     client.on('data', function onData (data) {
         var message = JSON.parse(data.toString());
         var opt = {

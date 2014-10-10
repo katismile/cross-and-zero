@@ -1,6 +1,5 @@
 var ConsoleRender = require('./console_render');
 var renderer = new ConsoleRender();
-
 var requestHandler = {
     'finish message': function (opt) {
         renderer.renderTable(opt.message.field);

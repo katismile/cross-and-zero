@@ -1,5 +1,4 @@
 var inquirer = require('inquirer');
-
 var User = function(){};
 User.prototype.makeChoice = function (gameId, combinations, client) {
     var data = {};
