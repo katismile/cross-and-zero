@@ -5,18 +5,22 @@ var net = require('net'),
     store = {},
     gameId = 0,
     pingsList = [],
-    figures = [];
+    figures = [],
+    flag = true;
 
-    store.sockets = [];
-    store.socketsName = {};
+store.sockets = [];
+store.socketsName = {};
 
 net.createServer(function(socket) {
     console.log('connect');
+    socket.setEncoding("utf8");
+
     var id = Math.floor(Math.random()*1e5);
 
     socket.gameId = gameId;
     socket.id = id;
     sockets[id] = socket;
+
 
     if(store.sockets.length < 3) {
         store.sockets.push(id);
@@ -31,7 +35,7 @@ net.createServer(function(socket) {
         store.gameId = gameId;
 
         setTimeout(function() {
-            controller.start(function(err, res) {
+            start(function(err, res) {
                 if(err) throw err;
 
                 store.sockets = [];
@@ -43,21 +47,28 @@ net.createServer(function(socket) {
 
     socket.on('data', function(data){
 
-        if(typeof JSON.parse(data.toString()) === 'string') {
-            console.log( JSON.parse(data.toString()) );
-        }
+        try {
+            data = JSON.parse(data);
 
-        if(typeof JSON.parse(data.toString()) === 'object') {
-
-            var action = JSON.parse(data.toString()).action,
-                options = JSON.parse(data.toString()).data;
-
-            console.log('action ' + action);
-
-            if(typeof controller[action] === 'function') {
-                controller[action](options);
+            if(typeof data === 'string') {
+                console.log(data);
             }
+
+            if(typeof data === 'object') {
+
+                var action = data.action,
+                    options = data.data;
+
+                console.log('action ' + action);
+
+                if(typeof controller[action] === 'function') {
+                    controller[action](options);
+                }
+            }
+        } catch(e) {
+            console.log(e);
         }
+
     });
     socket.on('end', function() {
 
@@ -86,8 +97,27 @@ sub.subscribe('delete');
 sub.on('message', function(channel, message) {
     var data = JSON.parse(message);
 
-    if (channel == 'restart') {
 
+    socket = data.sockets[data.current];
+
+    channelController[channel](data);
+
+    if(flag) {
+        if(sockets[socket]) {
+            console.log(data);
+            var obj = {
+                action: 'move',
+                data: data
+            };
+
+            console.log(obj);
+            sockets[socket].write(JSON.stringify(obj));
+        }
+    }
+});
+
+var channelController = {
+    'restart': function(data) {
         for(var t = 0; t < data.sockets.length; t++) {
             store.sockets.push(data.sockets[t]);
             sockets[data.sockets[t]].gameId = gameId;
@@ -96,7 +126,7 @@ sub.on('message', function(channel, message) {
 
         if(store.sockets.length > 1) {
             store.gameId++;
-            controller.start(function(err, res) {
+            start(function(err, res) {
                 if(err) throw err;
 
                 store.sockets = [];
@@ -105,8 +135,8 @@ sub.on('message', function(channel, message) {
                 console.log('restart sockets ' + store.sockets.length + ' ' + store.sockets);
             });
         }
-    } else if (channel == 'delete') {
-
+    },
+    'delete': function(data) {
         if(store.sockets.indexOf(data.socket) != -1) {
             var index = store.sockets.indexOf(data.socket);
             store.sockets.splice(index, 1);
@@ -119,7 +149,7 @@ sub.on('message', function(channel, message) {
 
         if(store.sockets.length > 1) {
             store.gameId = gameId;
-            controller.start(function(err, res) {
+            start(function(err, res) {
                 if(err) throw err;
 
                 store.sockets = [];
@@ -127,48 +157,34 @@ sub.on('message', function(channel, message) {
                 gameId++;
             });
         }
-    } else {
-        socket = data.sockets[data.current];
+    },
+    "finish": function(data) {
+        for(var i = 0; i < data.sockets.length; i++) {
+            sockets[data.sockets[i]].write(JSON.stringify(data.message));
 
-        if(channel == "finish") {
-
-            for(var i = 0; i < data.sockets.length; i++) {
-                sockets[data.sockets[i]].write(JSON.stringify(data.message));
-
-                if(store.sockets.indexOf(data.sockets[i]) == -1) {
-                    store.sockets.push(data.sockets[i]);
-                }
+            if(store.sockets.indexOf(data.sockets[i]) == -1) {
+                store.sockets.push(data.sockets[i]);
             }
-            setTimeout(function() {
-                controller.start(function(err, res) {
-                    if(err) throw err;
-
-                    store.sockets = [];
-                    pingsList = [];
-                    gameId++;
-                });
-                return;
-            }, 1000)
-
         }
+        flag = false;
 
-        if(channel == "game") {
-            redis.lpush('tasks', JSON.stringify(data));
-        }
+        setTimeout(function() {
+            start(function(err, res) {
+                if(err) throw err;
 
-        if(sockets[socket]) {
-            console.log(data);
-            var obj = {
-                action: 'move',
-                data: data
-            };
-
-            console.log(obj);
-            sockets[socket].write(JSON.stringify(obj));
-        }
+                store.sockets = [];
+                pingsList = [];
+                gameId++;
+            });
+            return;
+        }, 1000);
+    },
+    "game": function(data) {
+        redis.lpush('tasks', JSON.stringify(data), function(err, res) {
+            if(err) throw err;
+        });
     }
-
-});
+};
 
 var controller = {
     'ping': function(options) {
@@ -185,34 +201,35 @@ var controller = {
 
         };
         redis.lpush('tasks', JSON.stringify(obj));
-    },
-    'start': function(next) {
-
-        for(var i = 0; i < store.sockets.length; i++) {
-            var index = store.sockets[i],
-                obj = {
-                    action: 'ping'
-                };
-            sockets[index].write(JSON.stringify(obj));
-            console.log(sockets[index].figure);
-            store.socketsName[i+''] = sockets[index].figure;
-        }
-        store.figures = figures;
-
-        setTimeout(function(){
-            console.log(pingsList.length  + '   ' + store.sockets.length);
-            if(pingsList.length == store.sockets.length) {
-                console.log('Ok length of players');
-                var obj = {
-                    action: "start",
-                    data: store
-                };
-
-                redis.lpush('tasks', JSON.stringify(obj), function(err, res) {
-                    if(err) throw err;
-                });
-                next(null);
-            }
-        }, 5000);
     }
 };
+function start(next) {
+    flag = true;
+
+    for(var i = 0; i < store.sockets.length; i++) {
+        var index = store.sockets[i],
+            obj = {
+                action: 'ping'
+            };
+        sockets[index].write(JSON.stringify(obj));
+        console.log(sockets[index].figure);
+        store.socketsName[i+''] = sockets[index].figure;
+    }
+    store.figures = figures;
+
+    setTimeout(function(){
+        console.log(pingsList.length  + '   ' + store.sockets.length);
+        if(pingsList.length == store.sockets.length) {
+            console.log('Ok length of players');
+            var obj = {
+                action: "start",
+                data: store
+            };
+
+            redis.lpush('tasks', JSON.stringify(obj), function(err, res) {
+                if(err) throw err;
+            });
+            next(null);
+        }
+    }, 5000);
+}
