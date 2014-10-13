@@ -1,6 +1,7 @@
 module.exports = function (socket, scope){
     (function restart () {
         if(scope.flag) {
+            console.log(scope.suits);
             socket.write(JSON.stringify({
                 type: 'choose suit',
                 data: {

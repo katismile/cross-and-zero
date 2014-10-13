@@ -14,6 +14,7 @@ var scope = {
 };
 net.createServer(function(socket) {
     if (Object.keys(scope.sockets).length < 3) {
+        console.log(scope.flag);
         setSuit(socket, scope);
     }
     socket.on('data', function (data) {
@@ -23,6 +24,7 @@ net.createServer(function(socket) {
             socket: socket,
             message: message
         };
+        console.log(scope.flag);
         requestHandler[message["type"]](opt);
     });
     socket.on('end', function () {
@@ -30,6 +32,7 @@ net.createServer(function(socket) {
             scope: scope,
             socket: socket
         };
+        scope.flag = false;
         requestHandler['disconnect'](opt);
     });
 }).listen(7777, function () {

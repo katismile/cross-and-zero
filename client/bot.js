@@ -17,6 +17,7 @@ Bot.prototype.makeChoice = function (gameId, combinations, client) {
 };
 Bot.prototype.chooseSuit = function (message, client) {
     var comb = message.data.suits;
+    console.log(comb);
     var value = Math.floor (Math.random ()*comb.length);
     var combination = comb.splice(value, 1)[0];
     var suitMessage = {

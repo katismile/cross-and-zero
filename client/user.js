@@ -32,6 +32,7 @@ User.prototype.makeChoice = function (gameId, combinations, client) {
 };
 User.prototype.chooseSuit = function (message, client) {
     var comb = message.data.suits;
+    console.log(comb);
     inquirer.prompt([
         {
             type: 'list',

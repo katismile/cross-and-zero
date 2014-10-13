@@ -17,7 +17,7 @@ module.exports = function (games, i, sockets, channel) {
     if (sockets['x']) current = 'x';
     console.log("start");
     console.log(sockets);
-    console.log(current);
+    console.log('current: '+current);
     games[i] = new Game (i, combinations, field, sockets, current);
     var message = {
         type: 'choose position',

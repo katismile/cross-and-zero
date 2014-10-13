@@ -16,7 +16,7 @@ var requestHandler = {
         opt.makeChoice(opt.message.id, opt.message.combinations, opt.client);
     },
     'opponent exit': function (opt) {
-        renderer.renderMessage(opt.message);
+        renderer.renderMessage(opt.message.message);
     },
     'ping': function (opt) {
         console.log('ping');
