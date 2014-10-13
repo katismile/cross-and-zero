@@ -234,7 +234,7 @@ var TikTakToe = {
         console.log(table.toString());
     },
     disconnect: function(options) {
-
+        console.log('dissconect');
         var gameId = options.gameId,
             socketId = options.socketId,
             data = {};

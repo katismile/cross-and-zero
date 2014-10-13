@@ -10,6 +10,7 @@ var net = require('net'),
 
 store.sockets = [];
 store.socketsName = {};
+var checkInterval;
 
 net.createServer(function(socket) {
     console.log('connect');
@@ -60,6 +61,10 @@ net.createServer(function(socket) {
                     options = data.data;
 
                 console.log('action ' + action);
+                if(action === 'check'){
+                    console.log('clear interval');
+                    clearTimeout(checkInterval);
+                }
 
                 if(typeof controller[action] === 'function') {
                     controller[action](options);
@@ -71,7 +76,6 @@ net.createServer(function(socket) {
 
     });
     socket.on('end', function() {
-
         var obj = {
             action: "disconnect",
             data: {
@@ -96,22 +100,34 @@ sub.subscribe('delete');
 
 sub.on('message', function(channel, message) {
     var data = JSON.parse(message);
-
-
-    socket = data.sockets[data.current];
-
-    channelController[channel](data);
-
+    if(data.sockets) {
+        var socket = data.sockets[data.current];
+        channelController[channel](data);
+    }
     if(flag) {
         if(sockets[socket]) {
-            console.log(data);
             var obj = {
                 action: 'move',
                 data: data
             };
-
-            console.log(obj);
-            sockets[socket].write(JSON.stringify(obj));
+            console.log('next move');
+            checkInterval = setTimeout(function(){
+                console.log('remove socket');
+                sockets[socket].end();
+                var obj = {
+                    action: "disconnect",
+                    data: {
+                        gameId: sockets[socket].gameId,
+                        socketId: sockets[socket].id
+                    }
+                };
+                redis.lpush('tasks', JSON.stringify(obj), function(err, res) {
+                    if(err) throw err;
+                });
+            }, 5000);
+            if(sockets[socket]) {
+                sockets[socket].write(JSON.stringify(obj));
+            }
         }
     }
 });
@@ -176,7 +192,6 @@ var channelController = {
                 pingsList = [];
                 gameId++;
             });
-            return;
         }, 1000);
     },
     "game": function(data) {
@@ -212,13 +227,11 @@ function start(next) {
                 action: 'ping'
             };
         sockets[index].write(JSON.stringify(obj));
-        console.log(sockets[index].figure);
         store.socketsName[i+''] = sockets[index].figure;
     }
     store.figures = figures;
 
     setTimeout(function(){
-        console.log(pingsList.length  + '   ' + store.sockets.length);
         if(pingsList.length == store.sockets.length) {
             console.log('Ok length of players');
             var obj = {
