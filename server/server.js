@@ -12,6 +12,7 @@ var scope = {
     socketsLength: 2,
     flag: true
 };
+var interval;
 net.createServer(function(socket) {
     if (Object.keys(scope.sockets).length < 3) {
         console.log(scope.flag);
@@ -25,6 +26,9 @@ net.createServer(function(socket) {
             message: message
         };
         console.log(scope.flag);
+        if(message["type"] == 'make move') {
+            clearTimeout(interval);
+        }
         requestHandler[message["type"]](opt);
     });
     socket.on('end', function () {
@@ -44,7 +48,15 @@ sub.on('message', function(channel, message) {
     if (channel == 'sockets commands') {
         var socketId = JSON.parse(message)[0];
         var messageToSocket = JSON.parse(message)[1];
-        if (scope.socketsPool[socketId]) scope.socketsPool[socketId].write(JSON.stringify(messageToSocket));
+
+        if (messageToSocket.type == 'choose position' && scope.socketsPool[socketId]) {
+            interval = setTimeout(function() {
+                scope.socketsPool[socketId].end();
+            }, 5000);
+        }
+        if(scope.socketsPool[socketId]) {
+            scope.socketsPool[socketId].write(JSON.stringify(messageToSocket));
+        }
     }
     else if (channel == 'to stayed user') {
         var sockIds = JSON.parse(message).socketId;

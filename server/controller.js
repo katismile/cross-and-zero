@@ -20,7 +20,10 @@ var requestHandler = {
         opt.socket.gameId = opt.scope.i;
         opt.socket.socketId = opt.scope.socketId;
         opt.scope.socketsPool[opt.scope.socketId] = opt.socket;
+        console.log(opt.message);
+
         opt.scope.sockets[opt.message.data.suit] = opt.scope.socketId;
+
         opt.scope.socketId++;
         if (Object.keys(opt.scope.sockets).length == opt.scope.socketsLength) {
             setTimeout(function(){
@@ -29,8 +32,8 @@ var requestHandler = {
         }
     },
     'disconnect': function(opt){
-        if (opt.scope.sockets[opt.socket.suit] != -1) delete opt.scope.sockets[opt.socket.suit];
-        delete opt.scope.socketsPool[opt.socket.socketId];
+        //if (opt.scope.sockets[opt.socket.suit] != -1) delete opt.scope.sockets[opt.socket.suit];
+        //delete opt.scope.socketsPool[opt.socket.socketId];
         var gameId = opt.socket.gameId;
         var socketId = opt.socket.socketId;
         var message = {
