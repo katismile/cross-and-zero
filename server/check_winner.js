@@ -7,7 +7,7 @@ module.exports = function check(field) {
         var colFlag = true;
         while (j < innerLength) {
             rowFlag = rowFlag && first == field[i][j] && field[i][j] !== ' ' && first !== ' ';
-            colFlag = colFlag && first == field[j][i] && field[j][i] !== ' ' && first !== ' ';;
+            colFlag = colFlag && first == field[j][i] && field[j][i] !== ' ' && first !== ' ';
             j++;
         }
         if (rowFlag || colFlag) {
