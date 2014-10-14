@@ -15,7 +15,6 @@ var scope = {
 var interval;
 net.createServer(function(socket) {
     if (Object.keys(scope.sockets).length < 3) {
-        console.log(scope.flag);
         setSuit(socket, scope);
     }
     socket.on('data', function (data) {
@@ -25,7 +24,6 @@ net.createServer(function(socket) {
             socket: socket,
             message: message
         };
-        console.log(scope.flag);
         if(message["type"] == 'make move') {
             clearTimeout(interval);
         }
@@ -37,6 +35,7 @@ net.createServer(function(socket) {
             socket: socket
         };
         requestHandler['disconnect'](opt);
+        socket.destroy();
     });
 }).listen(7777, function () {
     console.log('Server is running!');
@@ -63,7 +62,6 @@ sub.on('message', function(channel, message) {
             if (scope.socketsPool[sockIds[i]]) {
                 scope.socketsPool[sockIds[i]].gameId = i;
                 scope.socketsLength = sockIds.length;
-                console.log(scope.socketsPool[sockIds[i]]);
                 setSuit(scope.socketsPool[sockIds[i]], scope)
             }
         }

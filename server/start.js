@@ -12,11 +12,16 @@ module.exports = function (games, i, sockets, channel) {
         }
     }
     var current;
-    if (sockets['y']) current = 'y';
-    if (sockets['0']) current = '0';
-    if (sockets['x']) current = 'x';
+    if (typeof sockets['x'] !== 'undefined') {
+        current = 'x';
+    }
+    else if (typeof sockets['0'] !== 'undefined') {
+        current = '0';
+    }
+    else if (typeof sockets['y'] !== 'undefined') {
+        current = 'y';
+    }
     console.log("start");
-    console.log(sockets);
     console.log('current: '+current);
     games[i] = new Game (i, combinations, field, sockets, current);
     var message = {

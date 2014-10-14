@@ -16,7 +16,8 @@ if (argv.c) {
 }
 function createSocket () {
     var client = new net.Socket( {
-        writable: true
+        writable: true,
+        allowHalfOpen: false
     });
     client.connect(7777);
     if (argv._[0] === 'isBot') {
