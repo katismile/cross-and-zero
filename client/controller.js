@@ -19,14 +19,12 @@ var requestHandler = {
         renderer.renderMessage(opt.message.message);
     },
     'ping': function (opt) {
-        console.log('ping');
         var pingMessage = {
             type: 'ping'
         };
         opt.client.write(JSON.stringify(pingMessage));
     },
     'choose suit': function (opt) {
-        console.log('suit');
         opt.chooseSuit(opt.message, opt.client);
     }
 };

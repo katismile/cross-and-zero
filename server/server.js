@@ -35,7 +35,6 @@ net.createServer(function(socket) {
             socket: socket
         };
         requestHandler['disconnect'](opt);
-        socket.destroy();
     });
 }).listen(7777, function () {
     console.log('Server is running!');

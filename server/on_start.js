@@ -5,7 +5,6 @@ module.exports = function (scope){
         scope.socketsPool[scope.sockets[Object.keys(scope.sockets)[j]]].write(JSON.stringify({type: 'ping'}));
     }
     setTimeout(function(){
-        console.log('start', scope.sockets);
         if(scope.pings.length > 1){
             var message = {
                 type : 'start game',

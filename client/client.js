@@ -37,4 +37,8 @@ function createSocket () {
         };
         requestHandler[message["type"]](opt);
     });
+    client.on('close', function(){
+        process.exit();
+        client.destroy();
+    });
 }

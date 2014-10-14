@@ -21,8 +21,7 @@ module.exports = function (games, i, sockets, channel) {
     else if (typeof sockets['y'] !== 'undefined') {
         current = 'y';
     }
-    console.log("start");
-    console.log('current: '+current);
+    console.log("start" + sockets);
     games[i] = new Game (i, combinations, field, sockets, current);
     var message = {
         type: 'choose position',
