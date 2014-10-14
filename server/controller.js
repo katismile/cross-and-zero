@@ -39,6 +39,8 @@ var requestHandler = {
             }
         };
         redis.lpush('tasks', JSON.stringify(message));
+        opt.scope.suits = ['x', '0', 'y'];
+        delete opt.scope.socketsPool[opt.socket.socketId]
     }
 };
 module.exports = requestHandler;
