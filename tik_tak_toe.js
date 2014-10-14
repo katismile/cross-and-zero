@@ -234,14 +234,11 @@ var TikTakToe = {
         console.log(table.toString());
     },
     disconnect: function(options) {
-        console.log('dissconect');
         var gameId = options.gameId,
             socketId = options.socketId,
             data = {};
-        console.log('game ' + this.games[gameId]);
-
-        if(this.games[gameId]) {
-            if(this.games[gameId].sockets.indexOf(socketId)) {
+        if (this.games[gameId]) {
+            if (this.games[gameId].sockets.indexOf(socketId) !== -1) {
                 var index = this.games[gameId].sockets.indexOf(socketId);
                 this.games[gameId].sockets.splice(index, 1);
 

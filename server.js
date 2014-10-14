@@ -60,9 +60,7 @@ net.createServer(function(socket) {
                 var action = data.action,
                     options = data.data;
 
-                console.log('action ' + action);
                 if(action === 'check'){
-                    console.log('clear interval');
                     clearTimeout(checkInterval);
                 }
 
@@ -76,6 +74,7 @@ net.createServer(function(socket) {
 
     });
     socket.on('end', function() {
+        console.log('end');
         var obj = {
             action: "disconnect",
             data: {
@@ -86,6 +85,7 @@ net.createServer(function(socket) {
         redis.lpush('tasks', JSON.stringify(obj), function(err, res) {
             if(err) throw err;
         });
+        socket.destroy();
     });
 
 }).listen(7777, function() {
@@ -110,20 +110,9 @@ sub.on('message', function(channel, message) {
                 action: 'move',
                 data: data
             };
-            console.log('next move');
             checkInterval = setTimeout(function(){
                 console.log('remove socket');
                 sockets[socket].end();
-                var obj = {
-                    action: "disconnect",
-                    data: {
-                        gameId: sockets[socket].gameId,
-                        socketId: sockets[socket].id
-                    }
-                };
-                redis.lpush('tasks', JSON.stringify(obj), function(err, res) {
-                    if(err) throw err;
-                });
             }, 5000);
             if(sockets[socket]) {
                 sockets[socket].write(JSON.stringify(obj));

@@ -15,7 +15,7 @@ var figures = ['X', 'O', 'Y'];
 
 function createSocket() {
     var client = new net.Socket( {
-        allowHalfOpen: true,
+        allowHalfOpen: false,
         readable: true,
         writable: true
     });
@@ -44,5 +44,8 @@ function createSocket() {
         if(typeof JSON.parse(data.toString()) === 'string') {
             console.log(JSON.parse(data.toString()));
         }
+    });
+    client.on('close', function(){
+        process.exit();
     });
 }
