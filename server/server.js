@@ -36,7 +36,6 @@ net.createServer(function(socket) {
             scope: scope,
             socket: socket
         };
-        scope.flag = false;
         requestHandler['disconnect'](opt);
     });
 }).listen(7777, function () {
@@ -63,14 +62,9 @@ sub.on('message', function(channel, message) {
         for (var i = 0; i < sockIds.length; i++) {
             if (scope.socketsPool[sockIds[i]]) {
                 scope.socketsPool[sockIds[i]].gameId = i;
-                var messageToStayed = {
-                    type: 'choose suit',
-                    data: {
-                        suits: scope.suits
-                    }
-                };
                 scope.socketsLength = sockIds.length;
-                scope.socketsPool[sockIds[i]].write(JSON.stringify(messageToStayed));
+                console.log(scope.socketsPool[sockIds[i]]);
+                setSuit(scope.socketsPool[sockIds[i]], scope)
             }
         }
     }
